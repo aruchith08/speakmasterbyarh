@@ -1,96 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Stellar Mercury Color System */
+    --background: 0 0% 1%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 5% 12%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Stellar Custom Tokens */
+    --chrome-1: 0 0% 100%;
+    --chrome-2: 240 5% 65%;
+    --chrome-3: 240 6% 10%;
+    --mercury-glow: rgba(255, 255, 255, 0.15);
+    --space-dark: 0 0% 1%;
+    --space-void: 0 0% 0%;
+    
+    /* Gradients */
+    --gradient-mercury: linear-gradient(90deg, hsl(0 0% 100%) 0%, hsl(240 5% 45%) 25%, hsl(0 0% 100%) 50%, hsl(240 5% 45%) 75%, hsl(0 0% 100%) 100%);
+    --gradient-chrome-card: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    --gradient-chrome-card-hover: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    
+    /* Shadows */
+    --shadow-chrome: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    --shadow-glow: 0 0 40px rgba(255, 255, 255, 0.4);
+    --shadow-inner-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 240 5% 65%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 4% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 0 0% 100%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 0 0% 1%;
+    --foreground: 0 0% 98%;
   }
 }
 
@@ -100,6 +77,320 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: none;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Typography */
+  .font-heading {
+    font-family: 'Syncopate', sans-serif;
+  }
+
+  .font-mono-hud {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Mercury Text Gradient */
+  .text-mercury {
+    background: var(--gradient-mercury);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: text-shine 8s linear infinite;
+  }
+
+  /* Chrome Glass Card */
+  .chrome-card {
+    background: var(--gradient-chrome-card);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-chrome), var(--shadow-inner-glow);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .chrome-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--gradient-chrome-card-hover);
+    transform: translateY(-5px);
+  }
+
+  .chrome-card-static {
+    background: var(--gradient-chrome-card);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-chrome), var(--shadow-inner-glow);
+  }
+
+  /* Stream Progress Bar */
+  .stream-bar {
+    @apply h-0.5 relative overflow-hidden;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .stream-fill {
+    @apply absolute h-full;
+    background: linear-gradient(90deg, transparent, hsl(var(--chrome-1)), transparent);
+    background-size: 200% 100%;
+    animation: stream-flow 2s infinite linear;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Mercury Button */
+  .btn-mercury {
+    @apply bg-white text-black font-bold uppercase text-[10px] tracking-[0.3em] relative overflow-hidden;
+    mix-blend-mode: screen;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .btn-mercury:hover {
+    letter-spacing: 3px;
+    box-shadow: var(--shadow-glow);
+    transform: scale(1.02);
+  }
+
+  /* HUD Label */
+  .hud-label {
+    @apply font-mono-hud text-[9px] uppercase tracking-[0.4em] text-muted-foreground;
+  }
+
+  .hud-value {
+    @apply font-mono-hud text-[10px] uppercase tracking-[0.2em] text-foreground;
+  }
+
+  /* Pulse Indicator */
+  .pulse-indicator {
+    @apply relative flex h-2 w-2;
+  }
+
+  .pulse-indicator::before {
+    @apply absolute inline-flex h-full w-full rounded-full bg-white opacity-75 animate-ping;
+    content: '';
+  }
+
+  .pulse-indicator::after {
+    @apply relative inline-flex rounded-full h-2 w-2 bg-white;
+    content: '';
+  }
+
+  /* Feature Line */
+  .feature-line {
+    @apply w-8 h-px bg-white/20 transition-all duration-700;
+  }
+
+  .group:hover .feature-line {
+    @apply w-full;
+  }
+
+  /* Cosmic Elements */
+  .space-bg {
+    @apply fixed inset-0 -z-20;
+    background: radial-gradient(circle at center, hsl(0 0% 7%) 0%, hsl(var(--space-dark)) 100%);
+  }
+
+  .stars {
+    @apply absolute top-0 left-0 w-full h-full opacity-30;
+    background-image: 
+      radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: stars-drift 100s linear infinite;
+  }
+
+  .mercury-blob {
+    @apply fixed rounded-full -z-10;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8) 0%, rgba(161,161,170,0.4) 40%, rgba(0,0,0,0) 100%);
+    filter: blur(60px);
+    mix-blend-mode: screen;
+    animation: blob-float 20s infinite alternate ease-in-out;
+  }
+
+  .shooting-star {
+    @apply absolute h-0.5;
+    left: 50%;
+    top: 50%;
+    background: linear-gradient(-45deg, rgba(255, 255, 255, 1), rgba(0, 0, 255, 0));
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 1));
+    animation: tail 3s ease-in-out infinite, shooting 3s ease-in-out infinite;
+    opacity: 0;
+  }
+
+  /* Custom Cursor */
+  .cursor-ring {
+    @apply fixed pointer-events-none z-[9999];
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: transform 0.1s ease-out, border-color 0.15s ease;
+  }
+
+  .cursor-ring.active {
+    transform: scale(0.8);
+    border-color: rgba(255, 255, 255, 1);
+  }
+
+  /* Navigation Link */
+  .nav-link {
+    @apply font-mono-hud text-[10px] uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors relative;
+  }
+
+  .nav-link::after {
+    @apply absolute bottom-0 left-0 h-px w-0 bg-foreground transition-all duration-300;
+    content: '';
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  /* Practice Card */
+  .practice-card {
+    @apply rounded-3xl p-8 cursor-pointer;
+    background: var(--gradient-chrome-card);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-chrome), var(--shadow-inner-glow);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .practice-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--gradient-chrome-card-hover);
+    transform: translateY(-5px);
+  }
+
+  .practice-card-number {
+    @apply font-mono-hud text-xs text-muted-foreground mb-6;
+  }
+
+  .practice-card-title {
+    @apply font-heading text-xl font-bold text-foreground mb-3 tracking-tight;
+  }
+
+  .practice-card-description {
+    @apply text-muted-foreground text-sm leading-relaxed mb-6;
+  }
+
+  /* Metric Card */
+  .metric-card {
+    @apply chrome-card-static rounded-2xl p-6;
+  }
+
+  .metric-label {
+    @apply hud-label mb-2;
+  }
+
+  .metric-value {
+    @apply text-5xl font-light text-foreground tracking-tighter;
+  }
+
+  .metric-unit {
+    @apply text-lg text-muted-foreground ml-1;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes text-shine {
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes stream-flow {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes stars-drift {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 1000px 1000px;
+    }
+  }
+
+  @keyframes blob-float {
+    0% {
+      transform: translate(0, 0) scale(1);
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+    100% {
+      transform: translate(100px, 50px) scale(1.1);
+      border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    }
+  }
+
+  @keyframes tail {
+    0% {
+      width: 0;
+    }
+    30% {
+      width: 100px;
+    }
+    100% {
+      width: 0;
+    }
+  }
+
+  @keyframes shooting {
+    0% {
+      transform: translateX(0) translateY(0) rotate(-45deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-800px) translateY(800px) rotate(-45deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-text-shine {
+    animation: text-shine 8s linear infinite;
+  }
+
+  .animate-stream-flow {
+    animation: stream-flow 2s infinite linear;
+  }
+
+  .animate-stars-drift {
+    animation: stars-drift 100s linear infinite;
+  }
+
+  .animate-blob-float {
+    animation: blob-float 20s infinite alternate ease-in-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 }
