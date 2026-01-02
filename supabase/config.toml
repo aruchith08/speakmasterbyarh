@@ -1,1 +1,7 @@
 project_id = "teytebyretcscclcjymb"
+
+[functions.analyze-speech]
+verify_jwt = false
+
+[functions.generate-content]
+verify_jwt = false
