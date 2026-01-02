@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Activity, BookOpen, BarChart3, Zap, Settings } from "lucide-react";
+import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { path: "/", label: "Command", icon: Activity },
@@ -10,6 +11,7 @@ const navItems = [
 
 export const Navigation = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="p-6 md:p-8 relative z-50">
@@ -41,21 +43,31 @@ export const Navigation = () => {
             ))}
           </div>
 
-          {/* Status & Connect */}
+          {/* Status & Auth */}
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-3">
               <span className="font-mono text-[9px] text-muted-foreground uppercase">
-                Latency: <span className="text-foreground">0.04ms</span>
+                {user ? `User: ${user.email?.split('@')[0]}` : "Guest Mode"}
               </span>
               <div className="h-4 w-px bg-border" />
             </div>
-            <Link
-              to="/settings"
-              className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all"
-            >
-              <Settings className="w-4 h-4 md:hidden" />
-              <span className="hidden md:inline">CONNECT</span>
-            </Link>
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4 md:hidden" />
+                <span className="hidden md:inline">LOGOUT</span>
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4 md:hidden" />
+                <span className="hidden md:inline">LOGIN</span>
+              </Link>
+            )}
           </div>
         </div>
 

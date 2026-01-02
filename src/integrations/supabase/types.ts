@@ -14,7 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      learning_progress: {
+        Row: {
+          current_level: number | null
+          id: string
+          last_updated: string
+          skill_area: string
+          user_id: string
+          xp_points: number | null
+        }
+        Insert: {
+          current_level?: number | null
+          id?: string
+          last_updated?: string
+          skill_area: string
+          user_id: string
+          xp_points?: number | null
+        }
+        Update: {
+          current_level?: number | null
+          id?: string
+          last_updated?: string
+          skill_area?: string
+          user_id?: string
+          xp_points?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          current_band_target: number | null
+          display_name: string | null
+          id: string
+          last_practice_date: string | null
+          streak_days: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          current_band_target?: number | null
+          display_name?: string | null
+          id?: string
+          last_practice_date?: string | null
+          streak_days?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          current_band_target?: number | null
+          display_name?: string | null
+          id?: string
+          last_practice_date?: string | null
+          streak_days?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      session_summaries: {
+        Row: {
+          ai_feedback: string | null
+          created_at: string
+          duration_seconds: number | null
+          fluency_score: number | null
+          grammar_score: number | null
+          id: string
+          lexical_score: number | null
+          optimized_response: string | null
+          overall_band: number | null
+          pronunciation_score: number | null
+          session_type: string
+          strengths: string[] | null
+          topic: string | null
+          transcript: string | null
+          user_id: string
+          vocabulary_learned: string[] | null
+          weaknesses: string[] | null
+        }
+        Insert: {
+          ai_feedback?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          fluency_score?: number | null
+          grammar_score?: number | null
+          id?: string
+          lexical_score?: number | null
+          optimized_response?: string | null
+          overall_band?: number | null
+          pronunciation_score?: number | null
+          session_type: string
+          strengths?: string[] | null
+          topic?: string | null
+          transcript?: string | null
+          user_id: string
+          vocabulary_learned?: string[] | null
+          weaknesses?: string[] | null
+        }
+        Update: {
+          ai_feedback?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          fluency_score?: number | null
+          grammar_score?: number | null
+          id?: string
+          lexical_score?: number | null
+          optimized_response?: string | null
+          overall_band?: number | null
+          pronunciation_score?: number | null
+          session_type?: string
+          strengths?: string[] | null
+          topic?: string | null
+          transcript?: string | null
+          user_id?: string
+          vocabulary_learned?: string[] | null
+          weaknesses?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
