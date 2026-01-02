@@ -17,6 +17,7 @@ import ReadAloud from "./pages/ReadAloud";
 import Discussion from "./pages/Discussion";
 import Idioms from "./pages/Idioms";
 import Intonation from "./pages/Intonation";
+import Drills from "./pages/Drills";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/practice/cue-card" element={<CueCard />} />
             <Route path="/practice/read-aloud" element={<ReadAloud />} />
             <Route path="/practice/discussion" element={<Discussion />} />
+            <Route path="/practice/drills" element={<Drills />} />
             <Route path="/practice/drills/idioms" element={<Idioms />} />
             <Route path="/practice/drills/intonation" element={<Intonation />} />
             <Route path="/roadmap" element={<Roadmap />} />
