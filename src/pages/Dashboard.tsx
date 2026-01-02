@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VocalizerCard } from "@/components/VocalizerCard";
@@ -5,6 +6,12 @@ import { PracticeCard } from "@/components/PracticeCard";
 import { MetricCard } from "@/components/MetricCard";
 
 const Dashboard = () => {
+  const trainingRef = useRef<HTMLDivElement>(null);
+
+  const scrollToTraining = () => {
+    trainingRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Mock user data
   const userData = {
     streak: 12,
@@ -104,7 +111,10 @@ const Dashboard = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap items-center gap-6">
-            <button className="btn-mercury h-14 md:h-16 px-8 md:px-12 rounded-full">
+            <button 
+              onClick={scrollToTraining}
+              className="btn-mercury h-14 md:h-16 px-8 md:px-12 rounded-full"
+            >
               Begin Training
             </button>
             <div className="flex items-center gap-4 group cursor-pointer">
@@ -138,7 +148,7 @@ const Dashboard = () => {
       </div>
 
       {/* Practice Modules Grid */}
-      <section className="mt-24 md:mt-40">
+      <section ref={trainingRef} className="mt-24 md:mt-40">
         <div className="flex items-center gap-4 mb-8 md:mb-12">
           <h2 className="font-heading text-xl md:text-2xl font-bold tracking-tight">
             Training Protocols
