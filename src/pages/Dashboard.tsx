@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VocalizerCard } from "@/components/VocalizerCard";
@@ -6,6 +7,7 @@ import { PracticeCard } from "@/components/PracticeCard";
 import { MetricCard } from "@/components/MetricCard";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const trainingRef = useRef<HTMLDivElement>(null);
 
   const scrollToTraining = () => {
@@ -117,7 +119,10 @@ const Dashboard = () => {
             >
               Begin Training
             </button>
-            <div className="flex items-center gap-4 group cursor-pointer">
+            <button 
+              onClick={() => navigate('/tutorial')}
+              className="flex items-center gap-4 group cursor-pointer"
+            >
               <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/50 transition-colors">
                 <svg
                   viewBox="0 0 24 24"
@@ -132,7 +137,7 @@ const Dashboard = () => {
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
                 Tutorial
               </span>
-            </div>
+            </button>
           </div>
         </div>
 

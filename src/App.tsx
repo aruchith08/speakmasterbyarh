@@ -19,6 +19,7 @@ import Idioms from "./pages/Idioms";
 import Intonation from "./pages/Intonation";
 import Drills from "./pages/Drills";
 import Auth from "./pages/Auth";
+import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/practice/drills/intonation" element={<Intonation />} />
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/tutorial" element={<Tutorial />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
