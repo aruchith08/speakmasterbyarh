@@ -51,10 +51,15 @@ export const useSessionManager = () => {
       return null;
     }
 
+    if (!user) {
+      toast.error("Please sign in to use AI features");
+      return null;
+    }
+
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-speech", {
-        body: { transcript, sessionType, topic }
+        body: { transcript, sessionType, topic, userId: user.id }
       });
 
       if (error) {
@@ -76,7 +81,7 @@ export const useSessionManager = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  }, []);
+  }, [user]);
 
   const saveSession = useCallback(async (sessionData: SessionData): Promise<boolean> => {
     if (!user) {
@@ -196,6 +201,11 @@ export const useSessionManager = () => {
     topic?: string,
     level?: number
   ) => {
+    if (!user) {
+      toast.error("Please sign in to use AI features");
+      return null;
+    }
+
     try {
       const history = await getSessionHistory(5);
       
@@ -204,6 +214,7 @@ export const useSessionManager = () => {
           type, 
           topic, 
           level,
+          userId: user.id,
           userHistory: history.length > 0 ? {
             avgBand: history.reduce((sum, s) => sum + (s.overall_band || 0), 0) / history.length,
             recentWeaknesses: history.flatMap(s => s.weaknesses || []).slice(0, 5),
@@ -218,13 +229,18 @@ export const useSessionManager = () => {
         return null;
       }
 
+      if (data.error) {
+        toast.error(data.error);
+        return null;
+      }
+
       return data;
     } catch (error) {
       console.error("Generate content error:", error);
       toast.error("Failed to generate content");
       return null;
     }
-  }, [getSessionHistory]);
+  }, [user, getSessionHistory]);
 
   return {
     analyzeTranscript,

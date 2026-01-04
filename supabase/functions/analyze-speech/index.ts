@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,12 +12,36 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript, sessionType, topic } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const { transcript, sessionType, topic, userId } = await req.json();
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "User ID is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
+    // Initialize Supabase client to fetch user's API key
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch user's Groq API key
+    const { data: apiKeyData, error: apiKeyError } = await supabase
+      .from("user_api_keys")
+      .select("groq_api_key")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (apiKeyError || !apiKeyData?.groq_api_key) {
+      console.error("API key fetch error:", apiKeyError);
+      return new Response(JSON.stringify({ error: "No Groq API key configured. Please add your API key in settings." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const GROQ_API_KEY = apiKeyData.groq_api_key;
 
     console.log(`Analyzing speech for session type: ${sessionType}, topic: ${topic}`);
 
@@ -89,38 +114,43 @@ Analyze the complete speaking test performance and provide comprehensive feedbac
 - vocabulary_learned (array of useful vocabulary)`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Call Groq API
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Topic: ${topic || "General"}\n\nTranscript to analyze:\n${transcript}` }
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+        max_tokens: 2048,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Groq API error:", response.status, errorText);
+      
+      if (response.status === 401) {
+        return new Response(JSON.stringify({ error: "Invalid Groq API key. Please update your API key in settings." }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      
+      throw new Error(`Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
