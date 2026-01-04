@@ -7,6 +7,7 @@ import { CosmicBackground } from "./components/CosmicBackground";
 import { CustomCursor } from "./components/CustomCursor";
 import { Navigation } from "./components/Navigation";
 import { AuthProvider } from "./hooks/useAuth";
+import { ApiKeyProvider } from "./hooks/useApiKey";
 import Index from "./pages/Index";
 import Practice from "./pages/Practice";
 import Roadmap from "./pages/Roadmap";
@@ -31,25 +32,27 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <CosmicBackground />
-          <CustomCursor />
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/practice" element={<Practice />} />
-            <Route path="/practice/mock-exam" element={<MockExam />} />
-            <Route path="/practice/cue-card" element={<CueCard />} />
-            <Route path="/practice/read-aloud" element={<ReadAloud />} />
-            <Route path="/practice/discussion" element={<Discussion />} />
-            <Route path="/practice/drills" element={<Drills />} />
-            <Route path="/practice/drills/idioms" element={<Idioms />} />
-            <Route path="/practice/drills/intonation" element={<Intonation />} />
-            <Route path="/roadmap" element={<Roadmap />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/tutorial" element={<Tutorial />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <ApiKeyProvider>
+            <CosmicBackground />
+            <CustomCursor />
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/practice" element={<Practice />} />
+              <Route path="/practice/mock-exam" element={<MockExam />} />
+              <Route path="/practice/cue-card" element={<CueCard />} />
+              <Route path="/practice/read-aloud" element={<ReadAloud />} />
+              <Route path="/practice/discussion" element={<Discussion />} />
+              <Route path="/practice/drills" element={<Drills />} />
+              <Route path="/practice/drills/idioms" element={<Idioms />} />
+              <Route path="/practice/drills/intonation" element={<Intonation />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/tutorial" element={<Tutorial />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ApiKeyProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

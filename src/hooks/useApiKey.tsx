@@ -1,0 +1,170 @@
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
+import { toast } from "sonner";
+
+interface ApiKeyContextType {
+  hasApiKey: boolean;
+  isLoading: boolean;
+  saveApiKey: (apiKey: string) => Promise<boolean>;
+  updateApiKey: (apiKey: string) => Promise<boolean>;
+  deleteApiKey: () => Promise<boolean>;
+  refetchApiKey: () => Promise<void>;
+}
+
+const ApiKeyContext = createContext<ApiKeyContextType | undefined>(undefined);
+
+export const ApiKeyProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchApiKeyStatus = useCallback(async () => {
+    if (!user) {
+      setHasApiKey(false);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("user_api_keys")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching API key status:", error);
+        setHasApiKey(false);
+      } else {
+        setHasApiKey(!!data);
+      }
+    } catch (error) {
+      console.error("Error fetching API key status:", error);
+      setHasApiKey(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchApiKeyStatus();
+  }, [fetchApiKeyStatus]);
+
+  const saveApiKey = useCallback(async (apiKey: string): Promise<boolean> => {
+    if (!user) {
+      toast.error("Please sign in to save your API key");
+      return false;
+    }
+
+    if (!apiKey.trim()) {
+      toast.error("Please enter a valid API key");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_api_keys")
+        .insert({
+          user_id: user.id,
+          groq_api_key: apiKey.trim(),
+        });
+
+      if (error) {
+        if (error.code === "23505") {
+          // Unique constraint violation - key already exists, update instead
+          return updateApiKey(apiKey);
+        }
+        console.error("Error saving API key:", error);
+        toast.error("Failed to save API key");
+        return false;
+      }
+
+      setHasApiKey(true);
+      toast.success("API key saved successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error saving API key:", error);
+      toast.error("Failed to save API key");
+      return false;
+    }
+  }, [user]);
+
+  const updateApiKey = useCallback(async (apiKey: string): Promise<boolean> => {
+    if (!user) {
+      toast.error("Please sign in to update your API key");
+      return false;
+    }
+
+    if (!apiKey.trim()) {
+      toast.error("Please enter a valid API key");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_api_keys")
+        .update({ groq_api_key: apiKey.trim() })
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error updating API key:", error);
+        toast.error("Failed to update API key");
+        return false;
+      }
+
+      toast.success("API key updated successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error updating API key:", error);
+      toast.error("Failed to update API key");
+      return false;
+    }
+  }, [user]);
+
+  const deleteApiKey = useCallback(async (): Promise<boolean> => {
+    if (!user) {
+      toast.error("Please sign in to delete your API key");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_api_keys")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error deleting API key:", error);
+        toast.error("Failed to delete API key");
+        return false;
+      }
+
+      setHasApiKey(false);
+      toast.success("API key deleted successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error deleting API key:", error);
+      toast.error("Failed to delete API key");
+      return false;
+    }
+  }, [user]);
+
+  const refetchApiKey = useCallback(async () => {
+    await fetchApiKeyStatus();
+  }, [fetchApiKeyStatus]);
+
+  return (
+    <ApiKeyContext.Provider value={{ hasApiKey, isLoading, saveApiKey, updateApiKey, deleteApiKey, refetchApiKey }}>
+      {children}
+    </ApiKeyContext.Provider>
+  );
+};
+
+export const useApiKey = () => {
+  const context = useContext(ApiKeyContext);
+  if (context === undefined) {
+    throw new Error("useApiKey must be used within an ApiKeyProvider");
+  }
+  return context;
+};
