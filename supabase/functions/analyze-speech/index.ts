@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,38 +11,41 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript, sessionType, topic, userId } = await req.json();
+    const { transcript, sessionType, topic, groqApiKey } = await req.json();
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "User ID is required" }), {
+    // Input validation
+    if (!groqApiKey || typeof groqApiKey !== 'string') {
+      return new Response(JSON.stringify({ error: "Groq API key is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Initialize Supabase client to fetch user's API key
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Fetch user's Groq API key
-    const { data: apiKeyData, error: apiKeyError } = await supabase
-      .from("user_api_keys")
-      .select("groq_api_key")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (apiKeyError || !apiKeyData?.groq_api_key) {
-      console.error("API key fetch error:", apiKeyError);
-      return new Response(JSON.stringify({ error: "No Groq API key configured. Please add your API key in settings." }), {
+    if (!transcript || typeof transcript !== 'string') {
+      return new Response(JSON.stringify({ error: "Invalid transcript" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const GROQ_API_KEY = apiKeyData.groq_api_key;
+    if (transcript.length > 10000) {
+      return new Response(JSON.stringify({ error: "Transcript too long (max 10000 characters)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    console.log(`Analyzing speech for session type: ${sessionType}, topic: ${topic}`);
+    if (topic && topic.length > 200) {
+      return new Response(JSON.stringify({ error: "Topic too long (max 200 characters)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const sanitizedTranscript = transcript.trim();
+    const sanitizedTopic = topic?.trim();
+
+    console.log(`Analyzing speech for session type: ${sessionType}, topic: ${sanitizedTopic}`);
 
     let systemPrompt = "";
     
@@ -90,6 +92,19 @@ Provide feedback in JSON format with these fields:
 - strengths (array of 2-3 pronunciation strengths)
 - weaknesses (array of 2-3 pronunciation areas to improve)`;
         break;
+
+      case "phonetics":
+        systemPrompt = `You are an expert phonetics coach analyzing pronunciation of specific phonemes.
+Analyze how well the speaker pronounced the target sounds in their speech.
+Provide feedback in JSON format with these fields:
+- pronunciation_score (number 1-9, one decimal)
+- accuracy_percentage (number 0-100)
+- target_sounds_analysis (array of objects with: {sound, attempts, correct, needs_work, tips})
+- ai_feedback (detailed phonetics coaching advice focusing on mouth position and articulation)
+- strengths (array of 2-3 pronunciation strengths)
+- weaknesses (array of 2-3 specific phonetic areas to improve)
+- practice_words (array of 5 words to practice the weak sounds)`;
+        break;
       
       case "mock_exam":
         systemPrompt = `You are an IELTS speaking examiner providing feedback on a full mock exam.
@@ -118,14 +133,14 @@ Analyze the complete speaking test performance and provide comprehensive feedbac
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Authorization": `Bearer ${groqApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Topic: ${topic || "General"}\n\nTranscript to analyze:\n${transcript}` }
+          { role: "user", content: `Topic: ${sanitizedTopic || "General"}\n\nTranscript to analyze:\n${sanitizedTranscript}` }
         ],
         response_format: { type: "json_object" },
         temperature: 0.7,

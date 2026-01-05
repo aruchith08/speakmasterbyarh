@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,36 +11,24 @@ serve(async (req) => {
   }
 
   try {
-    const { type, topic, level, userHistory, userId } = await req.json();
+    const { type, topic, level, userHistory, groqApiKey } = await req.json();
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "User ID is required" }), {
+    // Input validation
+    if (!groqApiKey || typeof groqApiKey !== 'string') {
+      return new Response(JSON.stringify({ error: "Groq API key is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Initialize Supabase client to fetch user's API key
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Fetch user's Groq API key
-    const { data: apiKeyData, error: apiKeyError } = await supabase
-      .from("user_api_keys")
-      .select("groq_api_key")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (apiKeyError || !apiKeyData?.groq_api_key) {
-      console.error("API key fetch error:", apiKeyError);
-      return new Response(JSON.stringify({ error: "No Groq API key configured. Please add your API key in settings." }), {
+    if (topic && topic.length > 200) {
+      return new Response(JSON.stringify({ error: "Topic too long (max 200 characters)" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const GROQ_API_KEY = apiKeyData.groq_api_key;
+    const sanitizedTopic = topic?.trim();
 
     console.log(`Generating content: type=${type}, level=${level}`);
 
@@ -61,7 +48,7 @@ serve(async (req) => {
       
       case "discussion":
         systemPrompt = `You are an IELTS examiner generating Part 3 discussion questions. Create thought-provoking abstract questions suitable for band ${level || 7}+ candidates.`;
-        userPrompt = `Generate 3 Part 3 discussion questions about "${topic || "society and technology"}" in JSON format:
+        userPrompt = `Generate 3 Part 3 discussion questions about "${sanitizedTopic || "society and technology"}" in JSON format:
 {
   "questions": [
     {"question": "...", "complexity": "moderate/high/very high", "hint": "Consider discussing..."}
@@ -76,6 +63,21 @@ serve(async (req) => {
   "passage": "The full passage text...",
   "difficult_words": ["word1", "word2", "word3"],
   "phonetic_focus": ["th sounds", "word stress", etc]
+}`;
+        break;
+
+      case "phonetics":
+        systemPrompt = `You are an expert phonetics teacher creating pronunciation drills for specific English phonemes.`;
+        userPrompt = `Generate a phonetics practice exercise for the phoneme/sound: "${sanitizedTopic}". Return JSON:
+{
+  "phoneme": "${sanitizedTopic}",
+  "ipa_symbol": "The IPA symbol for this sound",
+  "description": "Brief description of how to produce this sound (mouth position, tongue placement)",
+  "minimal_pairs": [{"word1": "...", "word2": "..."}, ...],
+  "practice_words": ["word1", "word2", "word3", "word4", "word5"],
+  "practice_sentences": ["Sentence 1 with multiple instances of the sound", "Sentence 2", "Sentence 3"],
+  "common_mistakes": ["mistake1", "mistake2"],
+  "tips": ["tip1", "tip2", "tip3"]
 }`;
         break;
       
@@ -95,8 +97,8 @@ serve(async (req) => {
         break;
       
       case "lesson":
-        systemPrompt = `You are an expert IELTS tutor creating personalized lesson content. ${userHistory ? `The student's history shows: ${userHistory}` : ''}`;
-        userPrompt = `Create a lesson about "${topic}" for a student at band ${level || 6} level. Return JSON:
+        systemPrompt = `You are an expert IELTS tutor creating personalized lesson content. ${userHistory ? `The student's history shows: ${JSON.stringify(userHistory)}` : ''}`;
+        userPrompt = `Create a lesson about "${sanitizedTopic}" for a student at band ${level || 6} level. Return JSON:
 {
   "title": "Lesson title",
   "key_concepts": ["concept1", "concept2", "concept3"],
@@ -126,7 +128,7 @@ serve(async (req) => {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Authorization": `Bearer ${groqApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

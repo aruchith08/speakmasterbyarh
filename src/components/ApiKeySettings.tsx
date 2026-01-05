@@ -24,13 +24,10 @@ export const ApiKeySettings = ({ onClose }: ApiKeySettingsProps) => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     setIsDeleting(true);
-    try {
-      await deleteApiKey();
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteApiKey();
+    setIsDeleting(false);
   };
 
   if (showUpdateModal) {
