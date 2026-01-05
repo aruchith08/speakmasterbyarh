@@ -18,6 +18,7 @@ import ReadAloud from "./pages/ReadAloud";
 import Discussion from "./pages/Discussion";
 import Idioms from "./pages/Idioms";
 import Intonation from "./pages/Intonation";
+import Phonetics from "./pages/Phonetics";
 import Drills from "./pages/Drills";
 import Auth from "./pages/Auth";
 import Tutorial from "./pages/Tutorial";
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/practice/drills" element={<Drills />} />
               <Route path="/practice/drills/idioms" element={<Idioms />} />
               <Route path="/practice/drills/intonation" element={<Intonation />} />
+              <Route path="/practice/drills/phonetics" element={<Phonetics />} />
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/tutorial" element={<Tutorial />} />

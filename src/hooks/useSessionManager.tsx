@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useApiKey } from "./useApiKey";
 import { toast } from "sonner";
 
 interface SessionData {
@@ -33,11 +34,14 @@ interface AnalysisResult {
   vocabulary_learned?: string[];
   accuracy_percentage?: number;
   mispronounced_words?: Array<{ word: string; issue: string; correction: string }>;
+  target_sounds_analysis?: Array<{ sound: string; attempts: number; correct: number; needs_work: boolean; tips: string }>;
+  practice_words?: string[];
   error?: string;
 }
 
 export const useSessionManager = () => {
   const { user } = useAuth();
+  const { getApiKey, hasApiKey } = useApiKey();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -56,10 +60,16 @@ export const useSessionManager = () => {
       return null;
     }
 
+    const groqApiKey = getApiKey();
+    if (!groqApiKey) {
+      toast.error("Please add your Groq API key in settings");
+      return null;
+    }
+
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-speech", {
-        body: { transcript, sessionType, topic, userId: user.id }
+        body: { transcript, sessionType, topic, groqApiKey }
       });
 
       if (error) {
@@ -81,7 +91,7 @@ export const useSessionManager = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [user]);
+  }, [user, getApiKey]);
 
   const saveSession = useCallback(async (sessionData: SessionData): Promise<boolean> => {
     if (!user) {
@@ -206,6 +216,12 @@ export const useSessionManager = () => {
       return null;
     }
 
+    const groqApiKey = getApiKey();
+    if (!groqApiKey) {
+      toast.error("Please add your Groq API key in settings");
+      return null;
+    }
+
     try {
       const history = await getSessionHistory(5);
       
@@ -214,7 +230,7 @@ export const useSessionManager = () => {
           type, 
           topic, 
           level,
-          userId: user.id,
+          groqApiKey,
           userHistory: history.length > 0 ? {
             avgBand: history.reduce((sum, s) => sum + (s.overall_band || 0), 0) / history.length,
             recentWeaknesses: history.flatMap(s => s.weaknesses || []).slice(0, 5),
@@ -240,7 +256,7 @@ export const useSessionManager = () => {
       toast.error("Failed to generate content");
       return null;
     }
-  }, [user, getSessionHistory]);
+  }, [user, getApiKey, getSessionHistory]);
 
   return {
     analyzeTranscript,
@@ -249,6 +265,7 @@ export const useSessionManager = () => {
     getUserProfile,
     generatePersonalizedContent,
     isAnalyzing,
-    isSaving
+    isSaving,
+    hasApiKey
   };
 };

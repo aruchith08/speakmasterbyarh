@@ -15,23 +15,20 @@ export const ApiKeySetup = ({ onComplete, isUpdateMode = false }: ApiKeySetupPro
   const [showKey, setShowKey] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!apiKey.trim()) return;
 
     setIsSubmitting(true);
-    try {
-      const success = isUpdateMode 
-        ? await updateApiKey(apiKey)
-        : await saveApiKey(apiKey);
-      
-      if (success) {
-        setApiKey("");
-        onComplete?.();
-      }
-    } finally {
-      setIsSubmitting(false);
+    const success = isUpdateMode 
+      ? updateApiKey(apiKey)
+      : saveApiKey(apiKey);
+    
+    if (success) {
+      setApiKey("");
+      onComplete?.();
     }
+    setIsSubmitting(false);
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Music, ArrowLeft } from "lucide-react";
+import { BookOpen, Music, ArrowLeft, AudioWaveform } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 
 const Drills = () => {
@@ -21,6 +21,14 @@ const Drills = () => {
       description: "Shadow model sentences to master pitch, rhythm, and prosodic accuracy.",
       icon: <Music className="w-6 h-6" />,
       path: "/practice/drills/intonation",
+    },
+    {
+      id: "phonetics",
+      title: "Phonetics Practice",
+      subtitle: "Sound Mastery",
+      description: "Target specific phonemes with AI-powered pronunciation drills and feedback.",
+      icon: <AudioWaveform className="w-6 h-6" />,
+      path: "/practice/drills/phonetics",
     },
   ];
 
@@ -48,7 +56,7 @@ const Drills = () => {
       </div>
 
       {/* Drills Grid */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {drills.map((drill) => (
           <button
             key={drill.id}
@@ -92,7 +100,7 @@ const Drills = () => {
       {/* Coming Soon Section */}
       <div className="mt-12 p-6 rounded-xl border border-dashed border-border/50 bg-card/10">
         <p className="text-center text-sm text-muted-foreground">
-          <span className="text-mercury">More drills coming soon:</span> Pronunciation Focus, Fluency Fillers, Cohesion Markers
+          <span className="text-mercury">More drills coming soon:</span> Fluency Fillers, Cohesion Markers
         </p>
       </div>
     </main>
