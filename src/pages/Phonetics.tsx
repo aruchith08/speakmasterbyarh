@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Play, Mic, MicOff, RefreshCw, Loader2, Volume2 } from "lucide-react";
+import { ArrowLeft, Mic, MicOff, RefreshCw, Loader2, Volume2, VolumeX, CheckCircle2, Award } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { StreamBar } from "@/components/StreamBar";
 import { toast } from "sonner";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { useApiKey } from "@/hooks/useApiKey";
@@ -109,6 +108,12 @@ interface PracticeContent {
   tips: string[];
 }
 
+interface SessionScore {
+  sentenceIndex: number;
+  accuracy: number;
+  feedback: string;
+}
+
 const Phonetics = () => {
   const [selectedCategory, setSelectedCategory] = useState<PhonemeCategory | null>(null);
   const [selectedPhoneme, setSelectedPhoneme] = useState<{ symbol: string; example: string; sound: string } | null>(null);
@@ -118,11 +123,25 @@ const Phonetics = () => {
   const [transcript, setTranscript] = useState("");
   const [analysis, setAnalysis] = useState<any>(null);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const [recognitionSupported, setRecognitionSupported] = useState(true);
+  const [sessionScores, setSessionScores] = useState<SessionScore[]>([]);
+  const [showSessionComplete, setShowSessionComplete] = useState(false);
+  const [isSavingSession, setIsSavingSession] = useState(false);
   
   const recognitionRef = useRef<any>(null);
-  const { generatePersonalizedContent, analyzeTranscript, isAnalyzing, hasApiKey } = useSessionManager();
+  const { generatePersonalizedContent, analyzeTranscript, saveSession, isAnalyzing, hasApiKey } = useSessionManager();
   const { hasApiKey: apiKeyExists } = useApiKey();
 
+  // Check for speech synthesis support
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      setSpeechSupported(false);
+    }
+  }, []);
+
+  // Setup speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
@@ -145,11 +164,29 @@ const Phonetics = () => {
       recognitionRef.current.onend = () => {
         setIsRecording(false);
       };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsRecording(false);
+        if (event.error === 'not-allowed') {
+          toast.error("Microphone access denied. Please allow microphone access in your browser settings.");
+        } else if (event.error === 'no-speech') {
+          toast.error("No speech detected. Please try again.");
+        } else {
+          toast.error("Speech recognition error. Please try again.");
+        }
+      };
+    } else {
+      setRecognitionSupported(false);
     }
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore errors when stopping
+        }
       }
     };
   }, []);
@@ -161,42 +198,91 @@ const Phonetics = () => {
     setAnalysis(null);
     setTranscript("");
     setCurrentSentenceIndex(0);
+    setSessionScores([]);
+    setShowSessionComplete(false);
 
     try {
       const content = await generatePersonalizedContent("phonetics", phoneme.sound);
       if (content) {
         setPracticeContent(content as PracticeContent);
+        toast.success("Practice content loaded!");
+      } else {
+        toast.error("Failed to generate content. Please check your API key.");
       }
     } catch (error) {
       console.error("Error loading practice content:", error);
-      toast.error("Failed to load practice content");
+      toast.error("Failed to load practice content. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const speakText = (text: string) => {
-    if ('speechSynthesis' in window) {
+    if (!speechSupported) {
+      toast.error("Text-to-speech not supported in your browser");
+      return;
+    }
+
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    try {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.8;
+      utterance.rate = 0.7; // Slower for clearer pronunciation
+      utterance.pitch = 1;
+      
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        toast.error("Error playing audio");
+      };
+      
       speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error("Speech synthesis error:", error);
+      toast.error("Failed to play audio");
     }
   };
 
+  const stopSpeaking = () => {
+    speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
   const startRecording = () => {
-    if (!recognitionRef.current) {
-      toast.error("Speech recognition not supported");
+    if (!recognitionSupported) {
+      toast.error("Speech recognition not supported in your browser. Please use Chrome or Edge.");
       return;
     }
+    
+    if (!recognitionRef.current) {
+      toast.error("Speech recognition not available");
+      return;
+    }
+
     setTranscript("");
+    setAnalysis(null);
     setIsRecording(true);
-    recognitionRef.current.start();
+    
+    try {
+      recognitionRef.current.start();
+    } catch (error) {
+      console.error("Error starting recognition:", error);
+      setIsRecording(false);
+      toast.error("Failed to start recording. Please try again.");
+    }
   };
 
   const stopRecording = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        // Ignore errors
+      }
     }
+    setIsRecording(false);
   };
 
   const analyzeRecording = async () => {
@@ -205,11 +291,19 @@ const Phonetics = () => {
     const result = await analyzeTranscript(
       transcript,
       "phonetics",
-      `Target phoneme: ${selectedPhoneme.symbol} (${selectedPhoneme.sound})`
+      `Target phoneme: ${selectedPhoneme.symbol} (${selectedPhoneme.sound}). Target sentence: "${practiceContent?.practice_sentences[currentSentenceIndex]}"`
     );
 
     if (result) {
       setAnalysis(result);
+      
+      // Save score for this sentence
+      const accuracy = result.accuracy_percentage || (result.pronunciation_score ? result.pronunciation_score * 10 : 0);
+      setSessionScores(prev => [...prev, {
+        sentenceIndex: currentSentenceIndex,
+        accuracy,
+        feedback: result.ai_feedback || ""
+      }]);
     }
   };
 
@@ -218,6 +312,40 @@ const Phonetics = () => {
       setCurrentSentenceIndex(prev => prev + 1);
       setTranscript("");
       setAnalysis(null);
+    } else {
+      // All sentences completed - show session summary
+      setShowSessionComplete(true);
+    }
+  };
+
+  const completeSession = async () => {
+    if (!selectedPhoneme || sessionScores.length === 0) return;
+
+    setIsSavingSession(true);
+    
+    try {
+      // Calculate average score
+      const avgAccuracy = sessionScores.reduce((sum, s) => sum + s.accuracy, 0) / sessionScores.length;
+      const pronunciationScore = avgAccuracy / 10; // Convert to 0-10 scale
+
+      await saveSession({
+        session_type: "phonetics",
+        topic: `Phoneme: ${selectedPhoneme.symbol} (${selectedPhoneme.sound})`,
+        transcript: sessionScores.map((s, i) => `Sentence ${i + 1}: ${s.accuracy}% - ${s.feedback}`).join("\n"),
+        pronunciation_score: pronunciationScore,
+        overall_band: pronunciationScore * 0.9, // Rough estimate
+        fluency_score: pronunciationScore * 0.9,
+        ai_feedback: `Practiced ${selectedPhoneme.symbol} sound with ${sessionScores.length} sentences. Average accuracy: ${avgAccuracy.toFixed(1)}%`,
+        strengths: avgAccuracy >= 80 ? [`Good pronunciation of ${selectedPhoneme.sound} sound`] : [],
+        weaknesses: avgAccuracy < 80 ? [`Continue practicing ${selectedPhoneme.sound} sound`] : [],
+      });
+
+      toast.success("Session saved successfully!");
+    } catch (error) {
+      console.error("Error saving session:", error);
+      toast.error("Failed to save session");
+    } finally {
+      setIsSavingSession(false);
     }
   };
 
@@ -227,6 +355,14 @@ const Phonetics = () => {
     setAnalysis(null);
     setTranscript("");
     setCurrentSentenceIndex(0);
+    setSessionScores([]);
+    setShowSessionComplete(false);
+    stopSpeaking();
+  };
+
+  const getOverallScore = () => {
+    if (sessionScores.length === 0) return 0;
+    return sessionScores.reduce((sum, s) => sum + s.accuracy, 0) / sessionScores.length;
   };
 
   if (!apiKeyExists) {
@@ -245,6 +381,12 @@ const Phonetics = () => {
           <p className="text-muted-foreground mb-6">
             Please add your Groq API key in settings to use phonetics practice.
           </p>
+          <Link
+            to="/settings"
+            className="btn-mercury h-12 px-8 rounded-xl inline-flex items-center justify-center"
+          >
+            Go to Settings
+          </Link>
         </div>
       </main>
     );
@@ -271,8 +413,19 @@ const Phonetics = () => {
         <p className="text-lg text-muted-foreground font-light leading-relaxed max-w-2xl">
           Master individual sounds with targeted phoneme drills. Select a sound category and practice with AI-generated exercises.
         </p>
+
+        {/* Browser compatibility warnings */}
+        {(!speechSupported || !recognitionSupported) && (
+          <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+            <p className="text-sm text-amber-400">
+              {!recognitionSupported && "⚠️ Speech recognition not supported. Please use Chrome or Edge. "}
+              {!speechSupported && "⚠️ Text-to-speech not supported in your browser."}
+            </p>
+          </div>
+        )}
       </div>
 
+      {/* Category Selection */}
       {!selectedCategory && !selectedPhoneme && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {phonemeCategories.map((category) => (
@@ -304,6 +457,7 @@ const Phonetics = () => {
         </div>
       )}
 
+      {/* Phoneme Selection */}
       {selectedCategory && !selectedPhoneme && (
         <div className="space-y-6">
           <button
@@ -332,7 +486,8 @@ const Phonetics = () => {
         </div>
       )}
 
-      {selectedPhoneme && (
+      {/* Practice Interface */}
+      {selectedPhoneme && !showSessionComplete && (
         <div className="space-y-6">
           <button
             onClick={resetPractice}
@@ -351,6 +506,34 @@ const Phonetics = () => {
               <p className="text-muted-foreground">Example: "{selectedPhoneme.example}"</p>
             </div>
           </div>
+
+          {/* Progress indicator */}
+          {practiceContent && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-mono">Progress:</span>
+              <div className="flex gap-1">
+                {practiceContent.practice_sentences.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      sessionScores.some(s => s.sentenceIndex === i)
+                        ? sessionScores.find(s => s.sentenceIndex === i)!.accuracy >= 80
+                          ? "bg-emerald-500"
+                          : sessionScores.find(s => s.sentenceIndex === i)!.accuracy >= 60
+                          ? "bg-amber-500"
+                          : "bg-red-500"
+                        : i === currentSentenceIndex
+                        ? "bg-mercury"
+                        : "bg-border"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-muted-foreground font-mono">
+                {sessionScores.length} / {practiceContent.practice_sentences.length}
+              </span>
+            </div>
+          )}
 
           {isLoading && (
             <div className="flex items-center justify-center py-20">
@@ -384,18 +567,30 @@ const Phonetics = () => {
                   </div>
 
                   <div className="flex gap-3 mb-4">
-                    <button
-                      onClick={() => speakText(practiceContent.practice_sentences[currentSentenceIndex])}
-                      className="flex-1 h-12 rounded-xl bg-white/10 border border-border text-foreground font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                      Listen
-                    </button>
+                    {!isSpeaking ? (
+                      <button
+                        onClick={() => speakText(practiceContent.practice_sentences[currentSentenceIndex])}
+                        disabled={!speechSupported}
+                        className="flex-1 h-12 rounded-xl bg-white/10 border border-border text-foreground font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                        Listen
+                      </button>
+                    ) : (
+                      <button
+                        onClick={stopSpeaking}
+                        className="flex-1 h-12 rounded-xl bg-mercury/20 border border-mercury/30 text-mercury font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                      >
+                        <VolumeX className="w-4 h-4" />
+                        Stop
+                      </button>
+                    )}
 
                     {!isRecording ? (
                       <button
                         onClick={startRecording}
-                        className="flex-1 h-12 rounded-xl btn-mercury flex items-center justify-center gap-2"
+                        disabled={!recognitionSupported}
+                        className="flex-1 h-12 rounded-xl btn-mercury flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <Mic className="w-4 h-4" />
                         Record
@@ -403,7 +598,7 @@ const Phonetics = () => {
                     ) : (
                       <button
                         onClick={stopRecording}
-                        className="flex-1 h-12 rounded-xl bg-red-500 text-white font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                        className="flex-1 h-12 rounded-xl bg-red-500 text-white font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse"
                       >
                         <MicOff className="w-4 h-4" />
                         Stop
@@ -437,7 +632,13 @@ const Phonetics = () => {
                       {analysis && (
                         <div className="space-y-4">
                           <div className="text-center py-4">
-                            <div className="text-4xl font-light text-foreground mb-1">
+                            <div className={`text-4xl font-light mb-1 ${
+                              (analysis.accuracy_percentage || analysis.pronunciation_score * 10) >= 80
+                                ? "text-emerald-400"
+                                : (analysis.accuracy_percentage || analysis.pronunciation_score * 10) >= 60
+                                ? "text-amber-400"
+                                : "text-red-400"
+                            }`}>
                               {analysis.accuracy_percentage || analysis.pronunciation_score * 10}%
                             </div>
                             <div className="hud-label">Accuracy Score</div>
@@ -459,14 +660,12 @@ const Phonetics = () => {
                               <RefreshCw className="w-4 h-4" />
                               Try Again
                             </button>
-                            {currentSentenceIndex < practiceContent.practice_sentences.length - 1 && (
-                              <button
-                                onClick={nextSentence}
-                                className="h-12 rounded-xl bg-foreground text-background font-mono text-xs uppercase tracking-widest"
-                              >
-                                Next Sentence
-                              </button>
-                            )}
+                            <button
+                              onClick={nextSentence}
+                              className="h-12 rounded-xl bg-foreground text-background font-mono text-xs uppercase tracking-widest"
+                            >
+                              {currentSentenceIndex < practiceContent.practice_sentences.length - 1 ? "Next Sentence" : "Complete Session"}
+                            </button>
                           </div>
                         </div>
                       )}
@@ -485,7 +684,8 @@ const Phonetics = () => {
                       <button
                         key={i}
                         onClick={() => speakText(word)}
-                        className="px-3 py-2 rounded-lg bg-white/5 border border-border text-sm hover:bg-white/10 transition-colors"
+                        disabled={!speechSupported}
+                        className="px-3 py-2 rounded-lg bg-white/5 border border-border text-sm hover:bg-white/10 transition-colors disabled:opacity-50"
                       >
                         {word}
                       </button>
@@ -502,14 +702,16 @@ const Phonetics = () => {
                         <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border">
                           <button
                             onClick={() => speakText(pair.word1)}
-                            className="flex-1 text-center hover:text-mercury transition-colors"
+                            disabled={!speechSupported}
+                            className="flex-1 text-center hover:text-mercury transition-colors disabled:opacity-50"
                           >
                             {pair.word1}
                           </button>
                           <span className="text-muted-foreground">vs</span>
                           <button
                             onClick={() => speakText(pair.word2)}
-                            className="flex-1 text-center hover:text-mercury transition-colors"
+                            disabled={!speechSupported}
+                            className="flex-1 text-center hover:text-mercury transition-colors disabled:opacity-50"
                           >
                             {pair.word2}
                           </button>
@@ -547,6 +749,67 @@ const Phonetics = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Session Complete Summary */}
+      {showSessionComplete && selectedPhoneme && (
+        <div className="space-y-6">
+          <div className="chrome-card rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-6">
+              <Award className="w-8 h-8 text-emerald-400" />
+            </div>
+            
+            <h2 className="text-2xl font-heading font-bold mb-2">Session Complete!</h2>
+            <p className="text-muted-foreground mb-6">
+              You practiced the {selectedPhoneme.symbol} sound with {sessionScores.length} sentences.
+            </p>
+
+            <div className="text-5xl font-light text-mercury mb-2">
+              {getOverallScore().toFixed(0)}%
+            </div>
+            <div className="hud-label mb-8">Average Accuracy</div>
+
+            {/* Individual Scores */}
+            <div className="grid gap-2 mb-8">
+              {sessionScores.map((score, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-border">
+                  <span className="text-sm">Sentence {i + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-mono ${
+                      score.accuracy >= 80 ? "text-emerald-400" : score.accuracy >= 60 ? "text-amber-400" : "text-red-400"
+                    }`}>
+                      {score.accuracy}%
+                    </span>
+                    {score.accuracy >= 80 && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={resetPractice}
+                className="flex-1 h-12 rounded-xl bg-white/10 border border-border text-foreground font-mono text-xs uppercase tracking-widest"
+              >
+                Practice Another Sound
+              </button>
+              <button
+                onClick={completeSession}
+                disabled={isSavingSession}
+                className="flex-1 h-12 rounded-xl btn-mercury flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSavingSession ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save & Finish"
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </main>

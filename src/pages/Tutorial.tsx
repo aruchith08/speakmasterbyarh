@@ -14,7 +14,7 @@ import {
   BookOpen,
   Lightbulb,
   CheckCircle2,
-  ChevronDown
+  AudioWaveform
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
@@ -118,6 +118,34 @@ const guideSections: GuideSection[] = [
     outcome: "Phonetic accuracy score with highlighted mispronunciations and correct pronunciation guides."
   },
   {
+    id: "phonetics-practice",
+    icon: <AudioWaveform className="w-5 h-5" />,
+    title: "Phonetics Practice",
+    subtitle: "Sound Mastery",
+    description: "Target specific English phonemes with AI-powered pronunciation drills. Perfect individual sounds that are challenging for non-native speakers.",
+    steps: [
+      "Navigate to Skill Forge (Micro Drills) from the Dashboard",
+      "Select 'Phonetics Practice' from the available drills",
+      "Choose a phoneme category (e.g., TH Sounds, R & L Sounds, Vowels, Diphthongs)",
+      "Select a specific phoneme to practice (e.g., /θ/, /r/, /æ/)",
+      "Click 'Listen' to hear the AI read the practice sentence",
+      "Click 'Record' to record yourself saying the sentence",
+      "Click 'Analyze Pronunciation' to get AI feedback on your accuracy",
+      "Review your accuracy score and detailed feedback",
+      "Try again or move to the next sentence",
+      "Complete all sentences and save your session"
+    ],
+    tips: [
+      "Start with sounds that don't exist in your native language",
+      "Use the 'Listen' button multiple times before recording",
+      "Practice minimal pairs to distinguish similar sounds (e.g., 'think' vs 'sink')",
+      "Focus on mouth position and tongue placement as described in the tips",
+      "Use the practice words section to warm up before full sentences",
+      "Pay attention to the 'Common Mistakes' section to avoid typical errors"
+    ],
+    outcome: "Improved pronunciation accuracy for specific challenging sounds with targeted practice and immediate AI feedback. Sessions are saved to track your progress over time."
+  },
+  {
     id: "abstract-core",
     icon: <MessageSquare className="w-5 h-5" />,
     title: "Abstract Core",
@@ -142,20 +170,22 @@ const guideSections: GuideSection[] = [
     icon: <Sparkles className="w-5 h-5" />,
     title: "Skill Forge",
     subtitle: "Micro Drills",
-    description: "Targeted exercises for specific skill improvement. Master idioms and perfect your intonation patterns.",
+    description: "Targeted exercises for specific skill improvement. Master idioms, perfect intonation patterns, and practice phonetics.",
     steps: [
-      "Choose between Idiom Master or Intonation Mirroring",
+      "Choose from Idiom Master, Intonation Mirroring, or Phonetics Practice",
       "For Idioms: Learn contextual usage and practice in sentences",
       "For Intonation: Listen to native patterns and mirror them",
+      "For Phonetics: Select specific sounds to practice with AI feedback",
       "Complete multiple short exercises for rapid improvement",
       "Track your drill completion and accuracy scores"
     ],
     tips: [
       "Practice idioms in context, not in isolation",
       "Record and compare your intonation to the native speaker",
-      "Do micro drills daily for consistent improvement"
+      "Do micro drills daily for consistent improvement",
+      "Focus on one phoneme category at a time for best results"
     ],
-    outcome: "Improved natural expression through idiom usage and native-like intonation patterns."
+    outcome: "Improved natural expression through idiom usage, native-like intonation patterns, and precise pronunciation."
   },
   {
     id: "journey-map",
@@ -234,7 +264,7 @@ const Tutorial = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {guideSections.map((section) => (
             <a
               key={section.id}
@@ -285,7 +315,7 @@ const Tutorial = () => {
                   <div>
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-[10px] text-muted-foreground">
-                        0{index + 1}
+                        {String(index + 1).padStart(2, '0')}
                       </span>
                       <h3 className="font-heading text-lg font-bold text-foreground">
                         {section.title}
@@ -419,7 +449,7 @@ const Tutorial = () => {
       <footer className="mt-16 pt-8 border-t border-border">
         <div className="flex justify-between items-center">
           <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground">
-            SPEAKMASTER_DOCS_V1.0
+            SPEAKMASTER_DOCS_V1.1
           </span>
           <button
             onClick={() => navigate('/')}

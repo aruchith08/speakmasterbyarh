@@ -1,28 +1,105 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones } from "lucide-react";
+import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones, Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VocalizerCard } from "@/components/VocalizerCard";
 import { PracticeCard } from "@/components/PracticeCard";
 import { MetricCard } from "@/components/MetricCard";
+import { useSessionManager } from "@/hooks/useSessionManager";
+import { useAuth } from "@/hooks/useAuth";
+
+interface UserStats {
+  streak: number;
+  avgBandScore: number;
+  sessionsCompleted: number;
+  score: number;
+  fluency: number;
+  lexical: number;
+  resonance: number;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const trainingRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const { getUserProfile, getSessionHistory } = useSessionManager();
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<UserStats>({
+    streak: 0,
+    avgBandScore: 0,
+    sessionsCompleted: 0,
+    score: 0,
+    fluency: 0,
+    lexical: 0,
+    resonance: 0,
+  });
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch profile and session history in parallel
+        const [profile, sessions] = await Promise.all([
+          getUserProfile(),
+          getSessionHistory(100) // Get up to 100 sessions for accurate average
+        ]);
+
+        // Calculate stats from profile
+        const streak = profile?.streak_days || 0;
+
+        // Calculate stats from sessions
+        const sessionsCompleted = sessions?.length || 0;
+        
+        let avgBandScore = 0;
+        let latestScore = 0;
+        let latestFluency = 0;
+        let latestLexical = 0;
+        let latestPronunciation = 0;
+
+        if (sessions && sessions.length > 0) {
+          // Calculate average band score from all sessions
+          const sessionsWithBand = sessions.filter((s: any) => s.overall_band != null);
+          if (sessionsWithBand.length > 0) {
+            const totalBand = sessionsWithBand.reduce((sum: number, s: any) => sum + Number(s.overall_band), 0);
+            avgBandScore = totalBand / sessionsWithBand.length;
+          }
+
+          // Get latest session for VocalizerCard scores
+          const latestSession = sessions[0]; // Sessions are ordered by created_at desc
+          if (latestSession) {
+            latestScore = latestSession.overall_band ? Number(latestSession.overall_band) : 0;
+            latestFluency = latestSession.fluency_score ? Number(latestSession.fluency_score) * 10 : 0;
+            latestLexical = latestSession.lexical_score ? Number(latestSession.lexical_score) * 10 : 0;
+            latestPronunciation = latestSession.pronunciation_score ? Number(latestSession.pronunciation_score) * 10 : 0;
+          }
+        }
+
+        setUserData({
+          streak,
+          avgBandScore,
+          sessionsCompleted,
+          score: latestScore,
+          fluency: latestFluency,
+          lexical: latestLexical,
+          resonance: latestPronunciation, // Using pronunciation as resonance
+        });
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserStats();
+  }, [user]);
 
   const scrollToTraining = () => {
     trainingRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // Mock user data
-  const userData = {
-    streak: 12,
-    avgBandScore: 7.5,
-    sessionsCompleted: 47,
-    score: 9.82,
-    fluency: 100,
-    lexical: 94,
-    resonance: 88,
   };
 
   const practiceModules = [
@@ -94,21 +171,31 @@ const Dashboard = () => {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-            <MetricCard
-              label="Practice_Streak"
-              value={userData.streak}
-              unit="days"
-            />
-            <MetricCard
-              label="Avg_Band"
-              value={userData.avgBandScore.toFixed(1)}
-            />
-            <div className="col-span-2 md:col-span-1">
-              <MetricCard
-                label="Sessions"
-                value={userData.sessionsCompleted}
-              />
-            </div>
+            {isLoading ? (
+              <>
+                <div className="h-20 rounded-xl bg-card/30 animate-pulse" />
+                <div className="h-20 rounded-xl bg-card/30 animate-pulse" />
+                <div className="col-span-2 md:col-span-1 h-20 rounded-xl bg-card/30 animate-pulse" />
+              </>
+            ) : (
+              <>
+                <MetricCard
+                  label="Practice_Streak"
+                  value={userData.streak}
+                  unit="days"
+                />
+                <MetricCard
+                  label="Avg_Band"
+                  value={userData.avgBandScore > 0 ? userData.avgBandScore.toFixed(1) : "—"}
+                />
+                <div className="col-span-2 md:col-span-1">
+                  <MetricCard
+                    label="Sessions"
+                    value={userData.sessionsCompleted}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* CTA Buttons */}
@@ -143,12 +230,18 @@ const Dashboard = () => {
 
         {/* Hero Right: Vocalizer Card */}
         <div className="lg:col-span-5 relative">
-          <VocalizerCard
-            score={userData.score}
-            fluency={userData.fluency}
-            lexical={userData.lexical}
-            resonance={userData.resonance}
-          />
+          {isLoading ? (
+            <div className="chrome-card rounded-[40px] p-8 md:p-10 flex items-center justify-center min-h-[400px]">
+              <Loader2 className="w-8 h-8 animate-spin text-mercury" />
+            </div>
+          ) : (
+            <VocalizerCard
+              score={userData.score}
+              fluency={userData.fluency}
+              lexical={userData.lexical}
+              resonance={userData.resonance}
+            />
+          )}
         </div>
       </div>
 
