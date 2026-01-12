@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,16 +12,52 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript, sessionType, topic, groqApiKey } = await req.json();
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Input validation
-    if (!groqApiKey || typeof groqApiKey !== 'string') {
-      return new Response(JSON.stringify({ error: "Groq API key is required" }), {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = claimsData.claims.sub;
+
+    // Fetch user's API key from database
+    const { data: apiKeyData, error: apiKeyError } = await supabase
+      .from('user_api_keys')
+      .select('groq_api_key')
+      .eq('user_id', userId)
+      .single();
+
+    if (apiKeyError || !apiKeyData?.groq_api_key) {
+      return new Response(JSON.stringify({ error: "No API key configured. Please add your Groq API key in settings." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const groqApiKey = apiKeyData.groq_api_key;
+
+    const { transcript, sessionType, topic } = await req.json();
+
+    // Input validation
     if (!transcript || typeof transcript !== 'string') {
       return new Response(JSON.stringify({ error: "Invalid transcript" }), {
         status: 400,

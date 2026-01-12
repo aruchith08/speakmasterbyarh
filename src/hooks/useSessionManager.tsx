@@ -41,7 +41,7 @@ interface AnalysisResult {
 
 export const useSessionManager = () => {
   const { user } = useAuth();
-  const { getApiKey, hasApiKey } = useApiKey();
+  const { hasApiKey } = useApiKey();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,16 +60,16 @@ export const useSessionManager = () => {
       return null;
     }
 
-    const groqApiKey = getApiKey();
-    if (!groqApiKey) {
+    if (!hasApiKey) {
       toast.error("Please add your Groq API key in settings");
       return null;
     }
 
     setIsAnalyzing(true);
     try {
+      // API key is fetched server-side from database using authenticated user
       const { data, error } = await supabase.functions.invoke("analyze-speech", {
-        body: { transcript, sessionType, topic, groqApiKey }
+        body: { transcript, sessionType, topic }
       });
 
       if (error) {
@@ -91,7 +91,7 @@ export const useSessionManager = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [user, getApiKey]);
+  }, [user, hasApiKey]);
 
   const saveSession = useCallback(async (sessionData: SessionData): Promise<boolean> => {
     if (!user) {
@@ -216,8 +216,7 @@ export const useSessionManager = () => {
       return null;
     }
 
-    const groqApiKey = getApiKey();
-    if (!groqApiKey) {
+    if (!hasApiKey) {
       toast.error("Please add your Groq API key in settings");
       return null;
     }
@@ -225,12 +224,12 @@ export const useSessionManager = () => {
     try {
       const history = await getSessionHistory(5);
       
+      // API key is fetched server-side from database using authenticated user
       const { data, error } = await supabase.functions.invoke("generate-content", {
         body: { 
           type, 
           topic, 
           level,
-          groqApiKey,
           userHistory: history.length > 0 ? {
             avgBand: history.reduce((sum, s) => sum + (s.overall_band || 0), 0) / history.length,
             recentWeaknesses: history.flatMap(s => s.weaknesses || []).slice(0, 5),
@@ -256,7 +255,7 @@ export const useSessionManager = () => {
       toast.error("Failed to generate content");
       return null;
     }
-  }, [user, getApiKey, getSessionHistory]);
+  }, [user, hasApiKey, getSessionHistory]);
 
   return {
     analyzeTranscript,
