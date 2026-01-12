@@ -24,9 +24,9 @@ export const ApiKeySettings = ({ onClose }: ApiKeySettingsProps) => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
-    deleteApiKey();
+    await deleteApiKey();
     setIsDeleting(false);
   };
 
