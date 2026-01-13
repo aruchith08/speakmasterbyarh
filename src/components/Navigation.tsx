@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings, Menu, X } from "lucide-react";
+import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 
@@ -15,12 +15,10 @@ export const Navigation = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="hidden md:block p-6 md:p-8 relative z-50">
+      <nav className="p-6 md:p-8 relative z-50">
         <div className="max-w-7xl mx-auto">
           <div className="chrome-card-static rounded-2xl px-6 md:px-8 py-4 flex items-center justify-between">
             {/* Logo */}
@@ -34,7 +32,7 @@ export const Navigation = () => {
             </Link>
 
             {/* Nav Links */}
-            <div className="flex gap-8">
+            <div className="hidden md:flex gap-8">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
@@ -72,95 +70,42 @@ export const Navigation = () => {
               {user ? (
                 <button
                   onClick={() => signOut()}
-                  className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all"
+                  className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all flex items-center gap-2"
                 >
-                  LOGOUT
+                  <LogOut className="w-4 h-4 md:hidden" />
+                  <span className="hidden md:inline">LOGOUT</span>
                 </button>
               ) : (
                 <Link
                   to="/auth"
-                  className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all"
+                  className="font-mono text-[10px] text-foreground font-bold tracking-widest px-4 py-2 border border-border rounded-lg hover:bg-foreground hover:text-background transition-all flex items-center gap-2"
                 >
-                  LOGIN
+                  <LogIn className="w-4 h-4 md:hidden" />
+                  <span className="hidden md:inline">LOGIN</span>
                 </Link>
               )}
             </div>
           </div>
-        </div>
-      </nav>
 
-      {/* Mobile Top Bar */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border safe-area-top">
-        <div className="flex items-center justify-between px-4 h-14">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-foreground rounded-full flex items-center justify-center">
-              <div className="w-3 h-3 bg-background rounded-full" />
-            </div>
-            <span className="font-heading font-bold text-xs tracking-widest text-foreground">
-              SPEAK<span className="opacity-40">MASTER</span>
-            </span>
-          </Link>
-
-          {/* Right Actions */}
-          <div className="flex items-center gap-2">
-            {user && (
-              <button
-                onClick={() => setShowSettings(true)}
-                className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg active:bg-white/10"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            )}
-            {user ? (
-              <button
-                onClick={() => signOut()}
-                className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg active:bg-white/10"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-            ) : (
-              <Link
-                to="/auth"
-                className="p-2.5 text-foreground transition-colors rounded-lg active:bg-white/10"
-              >
-                <LogIn className="w-5 h-5" />
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Bottom Navigation - App Style */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border safe-area-bottom">
-        <div className="flex justify-around items-center h-16 px-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || 
-              (item.path === "/practice" && location.pathname.startsWith("/practice"));
-            return (
+          {/* Mobile Nav */}
+          <div className="md:hidden mt-4 chrome-card-static rounded-xl p-2 flex justify-around">
+            {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all active:scale-95 min-w-[60px] ${
-                  isActive
-                    ? "text-foreground"
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
+                  location.pathname === item.path
+                    ? "text-foreground bg-white/5"
                     : "text-muted-foreground"
                 }`}
               >
-                <div className={`p-1.5 rounded-lg transition-colors ${isActive ? "bg-mercury/20" : ""}`}>
-                  <item.icon className={`w-5 h-5 ${isActive ? "text-mercury" : ""}`} />
-                </div>
-                <span className={`font-mono text-[9px] uppercase tracking-wider ${isActive ? "text-mercury" : ""}`}>
-                  {item.label}
-                </span>
+                <item.icon className="w-5 h-5" />
+                <span className="font-mono text-[8px] uppercase tracking-wider">{item.label}</span>
               </Link>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </nav>
-
-      {/* Mobile Content Spacers */}
-      <div className="md:hidden h-14" /> {/* Top spacer */}
 
       {/* API Key Settings Modal */}
       {showSettings && <ApiKeySettings onClose={() => setShowSettings(false)} />}

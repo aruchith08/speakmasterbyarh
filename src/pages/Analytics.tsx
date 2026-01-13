@@ -53,28 +53,28 @@ const Analytics = () => {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-4 sm:pt-8 md:pt-16 pb-24 md:pb-32">
+    <main className="max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-16 pb-24 md:pb-32">
       {/* Header */}
-      <div className="mb-8 sm:mb-12 md:mb-16">
+      <div className="mb-12 md:mb-16">
         <StatusBadge label="Telemetry Analysis Active" />
         
-        <h1 className="text-[clamp(1.75rem,5vw,4rem)] font-heading font-bold tracking-tighter leading-[0.9] text-foreground mt-6 sm:mt-8 mb-4 sm:mb-6">
+        <h1 className="text-[clamp(2rem,5vw,4rem)] font-heading font-bold tracking-tighter leading-[0.9] text-foreground mt-8 mb-6">
           DATA<br />
           <span className="text-mercury">TELEMETRY.</span>
         </h1>
         
-        <p className="text-base sm:text-lg text-muted-foreground font-light leading-relaxed max-w-2xl">
+        <p className="text-lg text-muted-foreground font-light leading-relaxed max-w-2xl">
           Long-term performance tracking and pattern recognition. Your speaking data analyzed for continuous improvement.
         </p>
       </div>
 
       {/* Period Selector */}
-      <div className="flex gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 mb-8">
         {["7d", "14d", "28d", "90d"].map((period) => (
           <button
             key={period}
             onClick={() => setSelectedPeriod(period)}
-            className={`px-3 sm:px-4 py-2 rounded-lg font-mono text-[10px] sm:text-xs uppercase tracking-widest transition-colors whitespace-nowrap active:scale-95 ${
+            className={`px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-widest transition-colors ${
               selectedPeriod === period
                 ? "bg-foreground text-background"
                 : "bg-white/5 text-muted-foreground hover:bg-white/10"
@@ -86,7 +86,7 @@ const Analytics = () => {
       </div>
 
       {/* Metrics Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-8 sm:mb-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <MetricCard label="Total_Sessions" value={47} />
         <MetricCard label="Avg_Band" value="7.5" />
         <MetricCard label="Best_Band" value="8.5" />

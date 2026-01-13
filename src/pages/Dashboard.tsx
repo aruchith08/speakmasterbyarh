@@ -154,33 +154,33 @@ const Dashboard = () => {
   ];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-4 sm:pt-8 md:pt-16 pb-24 md:pb-32">
-      <div className="grid lg:grid-cols-12 gap-6 md:gap-8 lg:gap-12 items-start">
+    <main className="max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-16 pb-24 md:pb-32">
+      <div className="grid lg:grid-cols-12 gap-8 md:gap-12 items-start">
         {/* Hero Left */}
-        <div className="lg:col-span-7 pt-2 sm:pt-4 md:pt-8">
+        <div className="lg:col-span-7 pt-4 md:pt-8">
           <StatusBadge label="Strategic Command Active" />
 
-          <h1 className="text-[clamp(2rem,8vw,5rem)] font-heading font-bold tracking-tighter leading-[0.9] text-foreground mt-6 sm:mt-8 mb-6 sm:mb-8 md:mb-10">
+          <h1 className="text-[clamp(2.5rem,7vw,5rem)] font-heading font-bold tracking-tighter leading-[0.9] text-foreground mt-8 mb-8 md:mb-10">
             COMMAND<br />
             <span className="text-mercury">CENTER.</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground font-light leading-relaxed max-w-lg mb-6 sm:mb-8 md:mb-12">
+          <p className="text-lg text-muted-foreground font-light leading-relaxed max-w-lg mb-8 md:mb-12">
             Your neural interface to IELTS mastery. Select a protocol to begin training or review your telemetry data.
           </p>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8 sm:mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
             {isLoading ? (
               <>
-                <div className="h-16 sm:h-20 rounded-xl bg-card/30 animate-pulse" />
-                <div className="h-16 sm:h-20 rounded-xl bg-card/30 animate-pulse" />
-                <div className="h-16 sm:h-20 rounded-xl bg-card/30 animate-pulse" />
+                <div className="h-20 rounded-xl bg-card/30 animate-pulse" />
+                <div className="h-20 rounded-xl bg-card/30 animate-pulse" />
+                <div className="col-span-2 md:col-span-1 h-20 rounded-xl bg-card/30 animate-pulse" />
               </>
             ) : (
               <>
                 <MetricCard
-                  label="Streak"
+                  label="Practice_Streak"
                   value={userData.streak}
                   unit="days"
                 />
@@ -188,30 +188,32 @@ const Dashboard = () => {
                   label="Avg_Band"
                   value={userData.avgBandScore > 0 ? userData.avgBandScore.toFixed(1) : "—"}
                 />
-                <MetricCard
-                  label="Sessions"
-                  value={userData.sessionsCompleted}
-                />
+                <div className="col-span-2 md:col-span-1">
+                  <MetricCard
+                    label="Sessions"
+                    value={userData.sessionsCompleted}
+                  />
+                </div>
               </>
             )}
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div className="flex flex-wrap items-center gap-6">
             <button 
               onClick={scrollToTraining}
-              className="btn-mercury h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-12 rounded-full text-sm sm:text-base active:scale-95 transition-transform"
+              className="btn-mercury h-14 md:h-16 px-8 md:px-12 rounded-full"
             >
               Begin Training
             </button>
             <button 
               onClick={() => navigate('/tutorial')}
-              className="flex items-center gap-3 sm:gap-4 group cursor-pointer active:scale-95 transition-transform"
+              className="flex items-center gap-4 group cursor-pointer"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/50 transition-colors">
+              <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/50 transition-colors">
                 <svg
                   viewBox="0 0 24 24"
-                  className="w-3 h-3 sm:w-4 sm:h-4 text-foreground"
+                  className="w-4 h-4 text-foreground"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -219,7 +221,7 @@ const Dashboard = () => {
                   <path d="M5 3l14 9-14 9V3z" />
                 </svg>
               </div>
-              <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
                 Tutorial
               </span>
             </button>
@@ -227,9 +229,9 @@ const Dashboard = () => {
         </div>
 
         {/* Hero Right: Vocalizer Card */}
-        <div className="lg:col-span-5 relative order-first lg:order-last">
+        <div className="lg:col-span-5 relative">
           {isLoading ? (
-            <div className="chrome-card rounded-[24px] sm:rounded-[40px] p-6 sm:p-8 md:p-10 flex items-center justify-center min-h-[280px] sm:min-h-[350px] md:min-h-[400px]">
+            <div className="chrome-card rounded-[40px] p-8 md:p-10 flex items-center justify-center min-h-[400px]">
               <Loader2 className="w-8 h-8 animate-spin text-mercury" />
             </div>
           ) : (
@@ -244,18 +246,18 @@ const Dashboard = () => {
       </div>
 
       {/* Practice Modules Grid */}
-      <section ref={trainingRef} className="mt-16 sm:mt-24 md:mt-40">
-        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 md:mb-12">
-          <h2 className="font-heading text-lg sm:text-xl md:text-2xl font-bold tracking-tight whitespace-nowrap">
+      <section ref={trainingRef} className="mt-24 md:mt-40">
+        <div className="flex items-center gap-4 mb-8 md:mb-12">
+          <h2 className="font-heading text-xl md:text-2xl font-bold tracking-tight">
             Training Protocols
           </h2>
           <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-widest hidden sm:block">
+          <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
             Select Module
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {practiceModules.map((module) => (
             <PracticeCard
               key={module.number}
@@ -271,26 +273,26 @@ const Dashboard = () => {
       </section>
 
       {/* Footer Info */}
-      <footer className="mt-16 sm:mt-24 md:mt-32 pt-6 sm:pt-8 border-t border-border mb-20 md:mb-0">
+      <footer className="mt-24 md:mt-32 pt-8 border-t border-border">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-4 sm:gap-8">
-            <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground">
+          <div className="flex items-center gap-8">
+            <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground">
               © 2024 SPEAKMASTER_SYS
             </span>
-            <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground hidden sm:block">
+            <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground hidden md:block">
               STELLAR_MERCURY_EDITION
             </span>
           </div>
           <div className="flex gap-6">
             <a
               href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <BookOpen className="w-4 h-4" />
             </a>
             <a
               href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-2"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
             </a>

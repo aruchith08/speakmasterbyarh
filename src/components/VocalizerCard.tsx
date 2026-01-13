@@ -17,26 +17,26 @@ export const VocalizerCard = ({ score, fluency, lexical, resonance }: VocalizerC
   const hasData = score > 0 || fluency > 0 || lexical > 0 || resonance > 0;
 
   return (
-    <div className="chrome-card rounded-[24px] sm:rounded-[32px] md:rounded-[40px] p-5 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden">
+    <div className="chrome-card rounded-[40px] p-8 md:p-10 relative overflow-hidden">
       {/* Internal Glow */}
-      <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 blur-[60px] rounded-full" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[60px] rounded-full" />
 
-      <div className="flex justify-between items-start mb-8 sm:mb-12 md:mb-16">
+      <div className="flex justify-between items-start mb-12 md:mb-16">
         <div>
-          <div className="hud-label mb-1 sm:mb-2 text-[8px] sm:text-[9px]">Vocal_Clarity</div>
-          <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-foreground tracking-tighter">
+          <div className="hud-label mb-2">Vocal_Clarity</div>
+          <div className="text-6xl md:text-7xl font-light text-foreground tracking-tighter">
             {displayScore}
           </div>
           {!hasData && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-2">Complete a session to see your scores</p>
+            <p className="text-xs text-muted-foreground mt-2">Complete a session to see your scores</p>
           )}
         </div>
-        <div className="w-10 h-10 sm:w-12 sm:h-12 border border-border rounded-xl flex items-center justify-center">
-          <div className={`w-1 sm:w-1.5 h-4 sm:h-6 bg-foreground ${hasData ? 'animate-pulse' : 'opacity-30'}`} />
+        <div className="w-12 h-12 border border-border rounded-xl flex items-center justify-center">
+          <div className={`w-1.5 h-6 bg-foreground ${hasData ? 'animate-pulse' : 'opacity-30'}`} />
         </div>
       </div>
 
-      <div className="space-y-4 sm:space-y-6 md:space-y-8">
+      <div className="space-y-6 md:space-y-8">
         <StreamBar
           label="Phonetic Flow"
           value={displayFluency}
@@ -56,9 +56,9 @@ export const VocalizerCard = ({ score, fluency, lexical, resonance }: VocalizerC
         />
       </div>
 
-      <div className="mt-8 sm:mt-12 md:mt-16 pt-4 sm:pt-6 md:pt-8 border-t border-border flex justify-between">
-        <div className="font-mono text-[8px] sm:text-[9px] text-muted-foreground">PROTOCOL_V8.4</div>
-        <div className="font-mono text-[8px] sm:text-[9px] text-muted-foreground">{hasData ? "ACTIVE_SESSION" : "AWAITING_DATA"}</div>
+      <div className="mt-12 md:mt-16 pt-6 md:pt-8 border-t border-border flex justify-between">
+        <div className="font-mono text-[9px] text-muted-foreground">PROTOCOL_V8.4</div>
+        <div className="font-mono text-[9px] text-muted-foreground">{hasData ? "ACTIVE_SESSION" : "AWAITING_DATA"}</div>
       </div>
     </div>
   );
