@@ -1,4 +1,4 @@
-import { Mic, FileText, Headphones, MessageSquare, Sparkles, Settings2 } from "lucide-react";
+import { Mic, FileText, Headphones, MessageSquare, Sparkles, Settings2, AudioWaveform } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PracticeCard } from "@/components/PracticeCard";
 
@@ -51,6 +51,14 @@ const Practice = () => {
       description: "Listen to model sentences and replicate pitch and rhythm. Receive a Mirror Score based on prosodic accuracy.",
       path: "/practice/drills/intonation",
       icon: <Settings2 className="w-5 h-5 text-foreground" />,
+    },
+    {
+      number: "07",
+      title: "Stammer Shield",
+      subtitle: "Fluency Builder",
+      description: "Neutralize hesitations and filler words. Build smooth, confident speech patterns.",
+      path: "/practice/stammer-neutralizer",
+      icon: <AudioWaveform className="w-5 h-5 text-foreground" />,
     },
   ];
 

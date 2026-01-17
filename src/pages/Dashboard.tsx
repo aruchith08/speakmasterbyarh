@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones, Loader2 } from "lucide-react";
+import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones, Loader2, AudioWaveform } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VocalizerCard } from "@/components/VocalizerCard";
 import { PracticeCard } from "@/components/PracticeCard";
@@ -150,6 +150,14 @@ const Dashboard = () => {
       description: "Gamified progression from Band 5 to Band 9 with AI-generated tutorials and practice.",
       path: "/roadmap",
       icon: <Target className="w-5 h-5 text-foreground" />,
+    },
+    {
+      number: "07",
+      title: "Stammer Shield",
+      subtitle: "Fluency Builder",
+      description: "Neutralize hesitations and filler words. Build smooth, confident speech patterns.",
+      path: "/practice/stammer-neutralizer",
+      icon: <AudioWaveform className="w-5 h-5 text-foreground" />,
     },
   ];
 
