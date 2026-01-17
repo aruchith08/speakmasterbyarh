@@ -14,7 +14,8 @@ import {
   BookOpen,
   Lightbulb,
   CheckCircle2,
-  AudioWaveform
+  AudioWaveform,
+  Volume2
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
@@ -226,6 +227,32 @@ const guideSections: GuideSection[] = [
       "Celebrate improvements to maintain motivation"
     ],
     outcome: "Data-driven insights to optimize your practice strategy and accelerate improvement."
+  },
+  {
+    id: "stammer-neutralizer",
+    icon: <Volume2 className="w-5 h-5" />,
+    title: "Stammer Shield",
+    subtitle: "Fluency Builder",
+    description: "Neutralize hesitations, filler words, and stammering patterns. Build smooth, confident speech through progressive phrase practice.",
+    steps: [
+      "Navigate to 'Stammer Shield' from the Dashboard or Practice page",
+      "Click 'Listen' to hear the AI read the target phrase clearly",
+      "Click 'Start Speaking' to begin recording after a 3-second countdown",
+      "Speak the phrase smoothly and confidently without hesitations",
+      "Click 'Stop Recording' when you've finished speaking",
+      "Review your fluency score, detected filler words, and AI feedback",
+      "Click 'Next Phrase' to continue through all 6 practice phrases",
+      "Complete all phrases to see your session summary and save progress"
+    ],
+    tips: [
+      "Breathe deeply before speaking to calm nerves and reduce stammering",
+      "Speak at a comfortable pace - rushing increases hesitations",
+      "Replace filler words like 'um' and 'uh' with brief pauses instead",
+      "Visualize the sentence in your mind before saying it aloud",
+      "Practice the easier phrases until you achieve 80%+ before moving to harder ones",
+      "Listen to the phrase multiple times to internalize the rhythm and flow"
+    ],
+    outcome: "Reduced filler words and hesitations with improved speech fluency. Sessions are saved to track your progress over time with average fluency scores."
   }
 ];
 
