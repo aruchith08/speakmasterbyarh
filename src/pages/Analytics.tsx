@@ -1,43 +1,14 @@
-import { useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { MetricCard } from "@/components/MetricCard";
 import { StreamBar } from "@/components/StreamBar";
-import { TrendingUp, TrendingDown, AlertCircle, Calendar } from "lucide-react";
-
-// Generate mock activity data for 28 days
-const generateActivityData = () => {
-  const data: { date: string; sessions: number; intensity: "none" | "low" | "medium" | "high" }[] = [];
-  const today = new Date();
-  
-  for (let i = 27; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const sessions = Math.floor(Math.random() * 5);
-    let intensity: "none" | "low" | "medium" | "high" = "none";
-    if (sessions > 0) intensity = "low";
-    if (sessions > 1) intensity = "medium";
-    if (sessions > 3) intensity = "high";
-    
-    data.push({
-      date: date.toISOString().split("T")[0],
-      sessions,
-      intensity,
-    });
-  }
-  return data;
-};
-
-const activityData = generateActivityData();
-
-const weaknesses = [
-  { id: 1, issue: "Inconsistent Tenses", frequency: 12, severity: "high" },
-  { id: 2, issue: "Over-reliance on Fillers", frequency: 8, severity: "medium" },
-  { id: 3, issue: "Limited Vocabulary Range", frequency: 6, severity: "medium" },
-  { id: 4, issue: "Pronunciation: 'th' sounds", frequency: 4, severity: "low" },
-];
+import { TrendingUp, TrendingDown, AlertCircle, Calendar, Loader2 } from "lucide-react";
+import { useRealtimeStats } from "@/hooks/useRealtimeStats";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 const Analytics = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("28d");
+  const { user } = useAuth();
+  const { stats, activityData, weaknesses, isLoading } = useRealtimeStats();
 
   const getIntensityColor = (intensity: string) => {
     switch (intensity) {
@@ -52,6 +23,43 @@ const Analytics = () => {
     }
   };
 
+  if (!user) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-16 pb-24 md:pb-32">
+        <div className="text-center py-20">
+          <h2 className="text-2xl font-heading font-bold mb-4">Sign In Required</h2>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to view your analytics and progress.
+          </p>
+          <Link
+            to="/auth"
+            className="btn-mercury h-12 px-8 rounded-xl inline-flex items-center justify-center"
+          >
+            Sign In
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-16 pb-24 md:pb-32">
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-mercury" />
+        </div>
+      </main>
+    );
+  }
+
+  // Calculate score trends (compare latest to average)
+  const fluencyTrend = stats.latestFluency > 0 ? stats.latestFluency / 10 : 0;
+  const lexicalTrend = stats.latestLexical > 0 ? stats.latestLexical / 10 : 0;
+  const pronunciationTrend = stats.latestPronunciation > 0 ? stats.latestPronunciation / 10 : 0;
+  const grammarTrend = stats.avgBandScore > 0 ? stats.avgBandScore : 0;
+
+  const overallTrend = stats.latestScore > stats.avgBandScore ? "up" : stats.latestScore < stats.avgBandScore ? "down" : "same";
+
   return (
     <main className="max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-16 pb-24 md:pb-32">
       {/* Header */}
@@ -64,33 +72,16 @@ const Analytics = () => {
         </h1>
         
         <p className="text-lg text-muted-foreground font-light leading-relaxed max-w-2xl">
-          Long-term performance tracking and pattern recognition. Your speaking data analyzed for continuous improvement.
+          Real-time performance tracking and pattern recognition. Your speaking data analyzed for continuous improvement.
         </p>
-      </div>
-
-      {/* Period Selector */}
-      <div className="flex gap-2 mb-8">
-        {["7d", "14d", "28d", "90d"].map((period) => (
-          <button
-            key={period}
-            onClick={() => setSelectedPeriod(period)}
-            className={`px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-widest transition-colors ${
-              selectedPeriod === period
-                ? "bg-foreground text-background"
-                : "bg-white/5 text-muted-foreground hover:bg-white/10"
-            }`}
-          >
-            {period}
-          </button>
-        ))}
       </div>
 
       {/* Metrics Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        <MetricCard label="Total_Sessions" value={47} />
-        <MetricCard label="Avg_Band" value="7.5" />
-        <MetricCard label="Best_Band" value="8.5" />
-        <MetricCard label="Practice_Hours" value={23} unit="h" />
+        <MetricCard label="Total_Sessions" value={stats.sessionsCompleted} />
+        <MetricCard label="Avg_Band" value={stats.avgBandScore > 0 ? stats.avgBandScore.toFixed(1) : "—"} />
+        <MetricCard label="Best_Band" value={stats.bestBandScore > 0 ? stats.bestBandScore.toFixed(1) : "—"} />
+        <MetricCard label="Practice_Hours" value={stats.practiceHours} unit="h" />
       </div>
 
       <div className="grid lg:grid-cols-12 gap-8">
@@ -134,24 +125,72 @@ const Analytics = () => {
               <div className="w-3 h-3 rounded-sm bg-white" />
               <span className="font-mono text-[9px] text-muted-foreground">More</span>
             </div>
+
+            {stats.sessionsCompleted === 0 && (
+              <div className="mt-6 p-4 rounded-xl border border-dashed border-border text-center">
+                <p className="text-sm text-muted-foreground">
+                  Complete practice sessions to see your activity heatmap
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Score Trends */}
           <div className="chrome-card-static rounded-2xl p-6 mt-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-heading font-bold">Score Trends</h3>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-400" />
-                <span className="font-mono text-sm text-green-400">+0.5</span>
-              </div>
+              {stats.sessionsCompleted > 0 && (
+                <div className="flex items-center gap-2">
+                  {overallTrend === "up" ? (
+                    <>
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <span className="font-mono text-sm text-green-400">Improving</span>
+                    </>
+                  ) : overallTrend === "down" ? (
+                    <>
+                      <TrendingDown className="w-4 h-4 text-red-400" />
+                      <span className="font-mono text-sm text-red-400">Needs Focus</span>
+                    </>
+                  ) : (
+                    <span className="font-mono text-sm text-muted-foreground">Stable</span>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-6">
-              <StreamBar label="Fluency" value="7.5" percentage={83} />
-              <StreamBar label="Lexical Resource" value="7.0" percentage={78} delay="-0.3s" />
-              <StreamBar label="Grammar" value="7.5" percentage={83} delay="-0.6s" />
-              <StreamBar label="Pronunciation" value="8.0" percentage={89} delay="-0.9s" />
-            </div>
+            {stats.sessionsCompleted > 0 ? (
+              <div className="space-y-6">
+                <StreamBar 
+                  label="Fluency" 
+                  value={fluencyTrend > 0 ? fluencyTrend.toFixed(1) : "—"} 
+                  percentage={fluencyTrend * 11} 
+                />
+                <StreamBar 
+                  label="Lexical Resource" 
+                  value={lexicalTrend > 0 ? lexicalTrend.toFixed(1) : "—"} 
+                  percentage={lexicalTrend * 11} 
+                  delay="-0.3s" 
+                />
+                <StreamBar 
+                  label="Grammar" 
+                  value={grammarTrend > 0 ? grammarTrend.toFixed(1) : "—"} 
+                  percentage={grammarTrend * 11} 
+                  delay="-0.6s" 
+                />
+                <StreamBar 
+                  label="Pronunciation" 
+                  value={pronunciationTrend > 0 ? pronunciationTrend.toFixed(1) : "—"} 
+                  percentage={pronunciationTrend * 11} 
+                  delay="-0.9s" 
+                />
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  Complete practice sessions to see your score trends
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -163,41 +202,53 @@ const Analytics = () => {
               <h3 className="font-heading font-bold">Weakness Detection</h3>
             </div>
 
-            <div className="space-y-4">
-              {weaknesses.map((weakness) => (
-                <div
-                  key={weakness.id}
-                  className="p-4 rounded-xl bg-white/5 border border-border"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm text-foreground font-medium">
-                      {weakness.issue}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded text-[9px] uppercase font-mono ${
-                        weakness.severity === "high"
-                          ? "bg-red-500/20 text-red-400"
-                          : weakness.severity === "medium"
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : "bg-green-500/20 text-green-400"
-                      }`}
-                    >
-                      {weakness.severity}
-                    </span>
+            {weaknesses.length > 0 ? (
+              <div className="space-y-4">
+                {weaknesses.map((weakness) => (
+                  <div
+                    key={weakness.id}
+                    className="p-4 rounded-xl bg-white/5 border border-border"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-sm text-foreground font-medium">
+                        {weakness.issue}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded text-[9px] uppercase font-mono ${
+                          weakness.severity === "high"
+                            ? "bg-red-500/20 text-red-400"
+                            : weakness.severity === "medium"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-green-500/20 text-green-400"
+                        }`}
+                      >
+                        {weakness.severity}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingDown className="w-3 h-3 text-muted-foreground" />
+                      <span className="font-mono text-[10px] text-muted-foreground">
+                        Detected {weakness.frequency}x in recent sessions
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      Detected {weakness.frequency}x in last 28 days
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {stats.sessionsCompleted > 0 
+                    ? "No weaknesses detected yet. Keep practicing!"
+                    : "Complete practice sessions to identify areas for improvement"}
+                </p>
+              </div>
+            )}
 
             <div className="mt-6 p-4 rounded-xl border border-dashed border-border">
               <p className="text-sm text-muted-foreground text-center">
-                Focus on high-severity issues first for maximum score improvement
+                {weaknesses.length > 0 
+                  ? "Focus on high-severity issues first for maximum score improvement"
+                  : "Your weaknesses will be analyzed from AI feedback in your sessions"}
               </p>
             </div>
           </div>

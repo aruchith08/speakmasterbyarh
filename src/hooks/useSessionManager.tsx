@@ -114,8 +114,11 @@ export const useSessionManager = () => {
 
       // Update streak if applicable
       await updateStreak();
+
+      // Award XP for completing a session (10 XP per session)
+      await awardSessionXp(sessionData.session_type);
       
-      toast.success("Session saved to your profile!");
+      toast.success("Session saved to your profile! +10 XP");
       return true;
     } catch (error) {
       console.error("Save session error:", error);
@@ -123,6 +126,45 @@ export const useSessionManager = () => {
       return false;
     } finally {
       setIsSaving(false);
+    }
+  }, [user]);
+
+  const awardSessionXp = useCallback(async (sessionType: string) => {
+    if (!user) return;
+
+    try {
+      // Check if record exists for this session type
+      const { data: existing } = await supabase
+        .from("learning_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("skill_area", sessionType)
+        .maybeSingle();
+
+      if (existing) {
+        const newXp = (existing.xp_points || 0) + 10;
+        const newLevel = Math.floor(newXp / 100) + 1;
+
+        await supabase
+          .from("learning_progress")
+          .update({
+            xp_points: newXp,
+            current_level: newLevel,
+            last_updated: new Date().toISOString()
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("learning_progress")
+          .insert({
+            user_id: user.id,
+            skill_area: sessionType,
+            xp_points: 10,
+            current_level: 1
+          });
+      }
+    } catch (error) {
+      console.error("Error awarding XP:", error);
     }
   }, [user]);
 

@@ -1,102 +1,18 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mic, BookOpen, FileText, MessageSquare, Sparkles, Target, Headphones, Loader2, AudioWaveform } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VocalizerCard } from "@/components/VocalizerCard";
 import { PracticeCard } from "@/components/PracticeCard";
 import { MetricCard } from "@/components/MetricCard";
-import { useSessionManager } from "@/hooks/useSessionManager";
+import { useRealtimeStats } from "@/hooks/useRealtimeStats";
 import { useAuth } from "@/hooks/useAuth";
-
-interface UserStats {
-  streak: number;
-  avgBandScore: number;
-  sessionsCompleted: number;
-  score: number;
-  fluency: number;
-  lexical: number;
-  resonance: number;
-}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const trainingRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const { getUserProfile, getSessionHistory } = useSessionManager();
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<UserStats>({
-    streak: 0,
-    avgBandScore: 0,
-    sessionsCompleted: 0,
-    score: 0,
-    fluency: 0,
-    lexical: 0,
-    resonance: 0,
-  });
-
-  useEffect(() => {
-    const fetchUserStats = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Fetch profile and session history in parallel
-        const [profile, sessions] = await Promise.all([
-          getUserProfile(),
-          getSessionHistory(100) // Get up to 100 sessions for accurate average
-        ]);
-
-        // Calculate stats from profile
-        const streak = profile?.streak_days || 0;
-
-        // Calculate stats from sessions
-        const sessionsCompleted = sessions?.length || 0;
-        
-        let avgBandScore = 0;
-        let latestScore = 0;
-        let latestFluency = 0;
-        let latestLexical = 0;
-        let latestPronunciation = 0;
-
-        if (sessions && sessions.length > 0) {
-          // Calculate average band score from all sessions
-          const sessionsWithBand = sessions.filter((s: any) => s.overall_band != null);
-          if (sessionsWithBand.length > 0) {
-            const totalBand = sessionsWithBand.reduce((sum: number, s: any) => sum + Number(s.overall_band), 0);
-            avgBandScore = totalBand / sessionsWithBand.length;
-          }
-
-          // Get latest session for VocalizerCard scores
-          const latestSession = sessions[0]; // Sessions are ordered by created_at desc
-          if (latestSession) {
-            latestScore = latestSession.overall_band ? Number(latestSession.overall_band) : 0;
-            latestFluency = latestSession.fluency_score ? Number(latestSession.fluency_score) * 10 : 0;
-            latestLexical = latestSession.lexical_score ? Number(latestSession.lexical_score) * 10 : 0;
-            latestPronunciation = latestSession.pronunciation_score ? Number(latestSession.pronunciation_score) * 10 : 0;
-          }
-        }
-
-        setUserData({
-          streak,
-          avgBandScore,
-          sessionsCompleted,
-          score: latestScore,
-          fluency: latestFluency,
-          lexical: latestLexical,
-          resonance: latestPronunciation, // Using pronunciation as resonance
-        });
-      } catch (error) {
-        console.error("Error fetching user stats:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserStats();
-  }, [user]);
+  const { stats, isLoading } = useRealtimeStats();
 
   const scrollToTraining = () => {
     trainingRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -189,17 +105,17 @@ const Dashboard = () => {
               <>
                 <MetricCard
                   label="Practice_Streak"
-                  value={userData.streak}
+                  value={stats.streak}
                   unit="days"
                 />
                 <MetricCard
                   label="Avg_Band"
-                  value={userData.avgBandScore > 0 ? userData.avgBandScore.toFixed(1) : "—"}
+                  value={stats.avgBandScore > 0 ? stats.avgBandScore.toFixed(1) : "—"}
                 />
                 <div className="col-span-2 md:col-span-1">
                   <MetricCard
                     label="Sessions"
-                    value={userData.sessionsCompleted}
+                    value={stats.sessionsCompleted}
                   />
                 </div>
               </>
@@ -244,10 +160,10 @@ const Dashboard = () => {
             </div>
           ) : (
             <VocalizerCard
-              score={userData.score}
-              fluency={userData.fluency}
-              lexical={userData.lexical}
-              resonance={userData.resonance}
+              score={stats.latestScore}
+              fluency={stats.latestFluency}
+              lexical={stats.latestLexical}
+              resonance={stats.latestPronunciation}
             />
           )}
         </div>
