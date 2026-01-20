@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { Mic, FileText, Headphones, MessageSquare, Sparkles, Settings2, AudioWaveform } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PracticeCard } from "@/components/PracticeCard";
 
 const Practice = () => {
+  const navigate = useNavigate();
   const practiceModules = [
     {
       number: "01",
@@ -132,7 +134,14 @@ const Practice = () => {
               Begin a randomized practice session across all modules
             </p>
           </div>
-          <button className="btn-mercury h-14 px-10 rounded-full whitespace-nowrap">
+          <button 
+            onClick={() => {
+              const paths = practiceModules.map(m => m.path);
+              const randomPath = paths[Math.floor(Math.random() * paths.length)];
+              navigate(randomPath);
+            }}
+            className="btn-mercury h-14 px-10 rounded-full whitespace-nowrap"
+          >
             Random Protocol
           </button>
         </div>

@@ -1,33 +1,94 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Clock, Mic, MicOff, RotateCcw, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, Mic, MicOff, RotateCcw, ChevronRight, AlertCircle } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { StreamBar } from "@/components/StreamBar";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSessionManager } from "@/hooks/useSessionManager";
+import { useAuth } from "@/hooks/useAuth";
+import { useApiKey } from "@/hooks/useApiKey";
+import { toast } from "sonner";
 
 type Phase = "intro" | "prep" | "delivery" | "analysis";
 
-const sampleCueCard = {
-  topic: "Describe a skill you would like to learn",
-  points: [
-    "What the skill is",
-    "Why you want to learn it",
-    "How you would learn it",
-    "And explain why this skill would be useful to you",
-  ],
-  tips: [
-    "Structure your answer with clear transitions",
-    "Use specific examples from your life",
-    "Vary your vocabulary and sentence structures",
-    "Aim to speak for the full 2 minutes",
-  ],
-};
+interface AnalysisResult {
+  fluencyScore: number;
+  lexicalScore: number;
+  grammarScore: number;
+  pronunciationScore: number;
+  overallBand: number;
+  feedback: string;
+  optimizedResponse: string;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+const sampleCueCards = [
+  {
+    topic: "Describe a skill you would like to learn",
+    points: [
+      "What the skill is",
+      "Why you want to learn it",
+      "How you would learn it",
+      "And explain why this skill would be useful to you",
+    ],
+  },
+  {
+    topic: "Describe a memorable journey you have taken",
+    points: [
+      "Where you went",
+      "How you traveled",
+      "Who you were with",
+      "And explain what made the journey memorable",
+    ],
+  },
+  {
+    topic: "Describe a person who has influenced you",
+    points: [
+      "Who this person is",
+      "How you know them",
+      "What they did that influenced you",
+      "And explain how this influence has affected your life",
+    ],
+  },
+  {
+    topic: "Describe a book that has had a significant impact on you",
+    points: [
+      "What the book is about",
+      "When you read it",
+      "Why you chose to read it",
+      "And explain how it impacted you",
+    ],
+  },
+];
+
+const tips = [
+  "Structure your answer with clear transitions",
+  "Use specific examples from your life",
+  "Vary your vocabulary and sentence structures",
+  "Aim to speak for the full 2 minutes",
+];
 
 const CueCard = () => {
+  const { user } = useAuth();
+  const { hasApiKey } = useApiKey();
+  const { analyzeTranscript, saveSession, isAnalyzing } = useSessionManager();
+  
   const [phase, setPhase] = useState<Phase>("intro");
   const [prepTime, setPrepTime] = useState(60);
   const [deliveryTime, setDeliveryTime] = useState(120);
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [currentCueCard, setCurrentCueCard] = useState(sampleCueCards[0]);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  
+  const {
+    transcript,
+    isListening,
+    isSupported,
+    startListening,
+    stopListening,
+    resetTranscript,
+    error: speechError,
+  } = useSpeechRecognition();
 
   // Timer logic
   useEffect(() => {
@@ -39,20 +100,19 @@ const CueCard = () => {
       }, 1000);
     } else if (phase === "prep" && prepTime === 0) {
       setPhase("delivery");
-      setIsRecording(true);
+      startListening();
     }
 
-    if (phase === "delivery" && deliveryTime > 0 && isRecording) {
+    if (phase === "delivery" && deliveryTime > 0 && isListening) {
       interval = setInterval(() => {
         setDeliveryTime((t) => t - 1);
       }, 1000);
     } else if (phase === "delivery" && deliveryTime === 0) {
-      setIsRecording(false);
-      setPhase("analysis");
+      handleStopRecording();
     }
 
     return () => clearInterval(interval);
-  }, [phase, prepTime, deliveryTime, isRecording]);
+  }, [phase, prepTime, deliveryTime, isListening]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -64,17 +124,77 @@ const CueCard = () => {
     setPhase("prep");
   };
 
-  const handleStop = () => {
-    setIsRecording(false);
+  const handleStopRecording = async () => {
+    stopListening();
     setPhase("analysis");
+
+    if (!transcript.trim()) {
+      toast.error("No speech detected. Please try again.");
+      return;
+    }
+
+    if (!user) {
+      toast.info("Sign in to get AI analysis of your response");
+      return;
+    }
+
+    if (!hasApiKey) {
+      toast.info("Add your API key in settings to get AI analysis");
+      return;
+    }
+
+    try {
+      const result = await analyzeTranscript(transcript, "cue-card", currentCueCard.topic);
+      
+      if (result) {
+        setAnalysisResult({
+          fluencyScore: result.fluency_score,
+          lexicalScore: result.lexical_score,
+          grammarScore: result.grammar_score,
+          pronunciationScore: result.pronunciation_score,
+          overallBand: result.overall_band,
+          feedback: result.ai_feedback || '',
+          optimizedResponse: result.optimized_response || '',
+          strengths: result.strengths || [],
+          weaknesses: result.weaknesses || [],
+        });
+
+        // Save session
+        await saveSession({
+          session_type: "cue-card",
+          topic: currentCueCard.topic,
+          transcript,
+          duration_seconds: 120 - deliveryTime,
+          overall_band: result.overall_band,
+          fluency_score: result.fluency_score,
+          lexical_score: result.lexical_score,
+          grammar_score: result.grammar_score,
+          pronunciation_score: result.pronunciation_score,
+          ai_feedback: result.ai_feedback,
+          optimized_response: result.optimized_response,
+          strengths: result.strengths,
+          weaknesses: result.weaknesses,
+          vocabulary_learned: result.vocabulary_learned || [],
+        });
+
+        toast.success("Session saved successfully!");
+      }
+    } catch (error) {
+      console.error("Analysis error:", error);
+      toast.error("Failed to analyze response");
+    }
   };
 
   const handleReset = () => {
+    // Get a random cue card
+    const randomIndex = Math.floor(Math.random() * sampleCueCards.length);
+    setCurrentCueCard(sampleCueCards[randomIndex]);
+    
     setPhase("intro");
     setPrepTime(60);
     setDeliveryTime(120);
-    setIsRecording(false);
-    setTranscript("");
+    resetTranscript();
+    setAnalysisResult(null);
   };
 
   return (
@@ -98,6 +218,8 @@ const CueCard = () => {
               ? "Preparation Phase"
               : phase === "delivery"
               ? "Recording"
+              : isAnalyzing
+              ? "Analyzing..."
               : "Analysis Complete"
           }
         />
@@ -107,6 +229,16 @@ const CueCard = () => {
           <span className="text-mercury">PROTOCOL.</span>
         </h1>
       </div>
+
+      {/* Browser Support Warning */}
+      {!isSupported && (
+        <div className="chrome-card-static rounded-xl p-4 mb-8 flex items-center gap-3 border-destructive">
+          <AlertCircle className="w-5 h-5 text-destructive" />
+          <p className="text-sm text-muted-foreground">
+            Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.
+          </p>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-12 gap-8">
         {/* Cue Card */}
@@ -131,10 +263,10 @@ const CueCard = () => {
 
             {/* Cue Card Content */}
             <div className="p-6 rounded-xl bg-white/5 border border-border mb-8">
-              <h3 className="font-heading text-lg font-bold mb-4">{sampleCueCard.topic}</h3>
+              <h3 className="font-heading text-lg font-bold mb-4">{currentCueCard.topic}</h3>
               <p className="text-sm text-muted-foreground mb-4">You should say:</p>
               <ul className="space-y-2">
-                {sampleCueCard.points.map((point, i) => (
+                {currentCueCard.points.map((point, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-foreground">
                     <ChevronRight className="w-4 h-4 mt-0.5 text-muted-foreground" />
                     {point}
@@ -145,7 +277,11 @@ const CueCard = () => {
 
             {/* Phase-specific content */}
             {phase === "intro" && (
-              <button onClick={handleStart} className="btn-mercury w-full h-14 rounded-xl">
+              <button 
+                onClick={handleStart} 
+                disabled={!isSupported}
+                className="btn-mercury w-full h-14 rounded-xl disabled:opacity-50"
+              >
                 Begin Preparation (60s)
               </button>
             )}
@@ -155,7 +291,7 @@ const CueCard = () => {
                 <div className="p-4 rounded-xl bg-white/5 border border-border">
                   <div className="hud-label mb-3">Strategic Tips</div>
                   <ul className="space-y-2">
-                    {sampleCueCard.tips.map((tip, i) => (
+                    {tips.map((tip, i) => (
                       <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                         <span className="text-foreground">{i + 1}.</span>
                         {tip}
@@ -179,7 +315,7 @@ const CueCard = () => {
                         key={i}
                         className="w-1 bg-foreground rounded-full animate-pulse"
                         style={{
-                          height: `${Math.random() * 40 + 10}px`,
+                          height: `${isListening ? Math.random() * 40 + 10 : 10}px`,
                           animationDelay: `${i * 0.05}s`,
                         }}
                       />
@@ -195,9 +331,15 @@ const CueCard = () => {
                   </p>
                 </div>
 
+                {speechError && (
+                  <div className="text-sm text-destructive text-center">
+                    Error: {speechError}
+                  </div>
+                )}
+
                 <button
-                  onClick={handleStop}
-                  className="w-full h-14 rounded-xl bg-red-500 text-white font-bold uppercase text-[10px] tracking-[0.3em] flex items-center justify-center gap-2"
+                  onClick={handleStopRecording}
+                  className="w-full h-14 rounded-xl bg-destructive text-destructive-foreground font-bold uppercase text-[10px] tracking-[0.3em] flex items-center justify-center gap-2"
                 >
                   <MicOff className="w-5 h-5" />
                   End Recording
@@ -206,10 +348,26 @@ const CueCard = () => {
             )}
 
             {phase === "analysis" && (
-              <button onClick={handleReset} className="btn-mercury w-full h-14 rounded-xl flex items-center justify-center gap-2">
-                <RotateCcw className="w-4 h-4" />
-                Try Another Topic
-              </button>
+              <div className="space-y-4">
+                {isAnalyzing && (
+                  <div className="text-center py-8">
+                    <div className="w-8 h-8 border-2 border-foreground border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-muted-foreground">Analyzing your response...</p>
+                  </div>
+                )}
+                
+                {transcript && (
+                  <div className="p-4 rounded-xl bg-white/5 border border-border max-h-40 overflow-y-auto">
+                    <div className="hud-label mb-2">Your Response</div>
+                    <p className="text-sm text-muted-foreground">{transcript}</p>
+                  </div>
+                )}
+
+                <button onClick={handleReset} className="btn-mercury w-full h-14 rounded-xl flex items-center justify-center gap-2">
+                  <RotateCcw className="w-4 h-4" />
+                  Try Another Topic
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -221,26 +379,49 @@ const CueCard = () => {
               {phase === "analysis" ? "Diagnostic Analysis" : "IELTS Criteria"}
             </h3>
 
-            {phase === "analysis" ? (
+            {phase === "analysis" && analysisResult ? (
               <div className="space-y-6">
-                <StreamBar label="Fluency & Coherence" value="7.0" percentage={78} />
-                <StreamBar label="Lexical Resource" value="7.5" percentage={83} delay="-0.3s" />
-                <StreamBar label="Grammar Range" value="7.0" percentage={78} delay="-0.6s" />
-                <StreamBar label="Pronunciation" value="7.5" percentage={83} delay="-0.9s" />
+                <StreamBar label="Fluency & Coherence" value={analysisResult.fluencyScore.toFixed(1)} percentage={(analysisResult.fluencyScore / 9) * 100} />
+                <StreamBar label="Lexical Resource" value={analysisResult.lexicalScore.toFixed(1)} percentage={(analysisResult.lexicalScore / 9) * 100} delay="-0.3s" />
+                <StreamBar label="Grammar Range" value={analysisResult.grammarScore.toFixed(1)} percentage={(analysisResult.grammarScore / 9) * 100} delay="-0.6s" />
+                <StreamBar label="Pronunciation" value={analysisResult.pronunciationScore.toFixed(1)} percentage={(analysisResult.pronunciationScore / 9) * 100} delay="-0.9s" />
 
                 <div className="pt-6 border-t border-border">
                   <div className="flex justify-between items-center mb-4">
                     <span className="hud-label">Overall Band</span>
-                    <span className="text-4xl font-light text-foreground">7.5</span>
+                    <span className="text-4xl font-light text-foreground">{analysisResult.overallBand.toFixed(1)}</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-white/5 border border-border">
-                  <div className="hud-label mb-2">Optimized Response</div>
+                {analysisResult.feedback && (
+                  <div className="p-4 rounded-xl bg-white/5 border border-border">
+                    <div className="hud-label mb-2">AI Feedback</div>
+                    <p className="text-sm text-muted-foreground">
+                      {analysisResult.feedback}
+                    </p>
+                  </div>
+                )}
+
+                {analysisResult.optimizedResponse && (
+                  <div className="p-4 rounded-xl bg-white/5 border border-border">
+                    <div className="hud-label mb-2">Optimized Response</div>
+                    <p className="text-sm text-muted-foreground">
+                      {analysisResult.optimizedResponse}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : phase === "analysis" && !analysisResult && !isAnalyzing ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-white/5 border border-border text-center">
                   <p className="text-sm text-muted-foreground">
-                    AI-generated high-band version of your response will appear here after analysis.
+                    {!user ? "Sign in to get AI analysis" : !hasApiKey ? "Add API key for AI analysis" : "No analysis available"}
                   </p>
                 </div>
+                <StreamBar label="Fluency & Coherence" value="--" percentage={0} />
+                <StreamBar label="Lexical Resource" value="--" percentage={0} delay="-0.3s" />
+                <StreamBar label="Grammar Range" value="--" percentage={0} delay="-0.6s" />
+                <StreamBar label="Pronunciation" value="--" percentage={0} delay="-0.9s" />
               </div>
             ) : (
               <div className="space-y-4">

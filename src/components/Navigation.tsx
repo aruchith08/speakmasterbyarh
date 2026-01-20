@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings } from "lucide-react";
+import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 
@@ -55,6 +55,17 @@ export const Navigation = () => {
                 </span>
                 <div className="h-4 w-px bg-border" />
               </div>
+              
+              {/* Profile Button (only for logged-in users) */}
+              {user && (
+                <Link
+                  to="/profile"
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-white/5"
+                  title="Profile"
+                >
+                  <User className="w-4 h-4" />
+                </Link>
+              )}
               
               {/* Settings Button (only for logged-in users) */}
               {user && (

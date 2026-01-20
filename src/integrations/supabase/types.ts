@@ -137,6 +137,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_api_keys: {
         Row: {
           created_at: string
@@ -160,6 +181,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_vocabulary: {
+        Row: {
+          created_at: string | null
+          definition: string | null
+          example_sentence: string | null
+          id: string
+          mastery_level: number | null
+          next_review_date: string | null
+          source_session_id: string | null
+          updated_at: string | null
+          user_id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string | null
+          definition?: string | null
+          example_sentence?: string | null
+          id?: string
+          mastery_level?: number | null
+          next_review_date?: string | null
+          source_session_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          word: string
+        }
+        Update: {
+          created_at?: string | null
+          definition?: string | null
+          example_sentence?: string | null
+          id?: string
+          mastery_level?: number | null
+          next_review_date?: string | null
+          source_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_vocabulary_source_session_id_fkey"
+            columns: ["source_session_id"]
+            isOneToOne: false
+            referencedRelation: "session_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
