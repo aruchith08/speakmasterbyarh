@@ -23,6 +23,10 @@ import Drills from "./pages/Drills";
 import StammerNeutralizer from "./pages/StammerNeutralizer";
 import Auth from "./pages/Auth";
 import Tutorial from "./pages/Tutorial";
+import Profile from "./pages/Profile";
+import SessionHistory from "./pages/SessionHistory";
+import Vocabulary from "./pages/Vocabulary";
+import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +58,10 @@ const App = () => (
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/tutorial" element={<Tutorial />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/session-history" element={<SessionHistory />} />
+              <Route path="/vocabulary" element={<Vocabulary />} />
+              <Route path="/achievements" element={<Achievements />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ApiKeyProvider>
