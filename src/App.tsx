@@ -27,6 +27,7 @@ import Profile from "./pages/Profile";
 import SessionHistory from "./pages/SessionHistory";
 import Vocabulary from "./pages/Vocabulary";
 import Achievements from "./pages/Achievements";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/session-history" element={<SessionHistory />} />
               <Route path="/vocabulary" element={<Vocabulary />} />
               <Route path="/achievements" element={<Achievements />} />
+              <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ApiKeyProvider>
