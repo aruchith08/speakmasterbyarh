@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings, User } from "lucide-react";
+import { Activity, BookOpen, BarChart3, Zap, LogIn, LogOut, Settings, User, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 
@@ -9,6 +9,7 @@ const navItems = [
   { path: "/practice", label: "Protocol", icon: Zap },
   { path: "/roadmap", label: "Journey", icon: BookOpen },
   { path: "/analytics", label: "Telemetry", icon: BarChart3 },
+  { path: "/about", label: "About", icon: Info },
 ];
 
 export const Navigation = () => {
