@@ -2,6 +2,7 @@ import { ArrowLeft, Mic, Brain, Target, Trophy, BookOpen, BarChart3, Users, Zap,
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import speakmasterBanner from "@/assets/speakmaster-banner.png";
 
 const About = () => {
   const navigate = useNavigate();
@@ -91,6 +92,15 @@ const About = () => {
       <CosmicBackground />
       
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+        {/* Banner */}
+        <div className="mb-8 rounded-2xl overflow-hidden border border-border/50">
+          <img 
+            src={speakmasterBanner} 
+            alt="SpeakMaster by ARH" 
+            className="w-full h-auto object-cover"
+          />
+        </div>
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button 
