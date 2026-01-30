@@ -81,29 +81,29 @@ const Practice = () => {
       </div>
 
       {/* Configuration Panel */}
-      <div className="chrome-card-static rounded-2xl p-6 mb-12">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <div>
-              <div className="hud-label mb-1">Examiner Mode</div>
-              <select className="bg-transparent border border-border rounded-lg px-4 py-2 font-mono text-sm text-foreground focus:outline-none focus:border-foreground/50">
+      <div className="chrome-card-static rounded-2xl p-4 md:p-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="grid grid-cols-2 md:flex md:items-center gap-3 md:gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="hud-label mb-1 text-[8px] md:text-[9px]">Examiner Mode</div>
+              <select className="w-full bg-card/50 border border-border rounded-lg px-3 py-2 font-mono text-xs md:text-sm text-foreground focus:outline-none focus:border-foreground/50 appearance-none cursor-pointer">
                 <option value="professional">Professional</option>
                 <option value="encourager">Encourager</option>
                 <option value="academic">Academic</option>
               </select>
             </div>
             <div className="h-8 w-px bg-border hidden md:block" />
-            <div>
-              <div className="hud-label mb-1">Acoustic Profile</div>
-              <select className="bg-transparent border border-border rounded-lg px-4 py-2 font-mono text-sm text-foreground focus:outline-none focus:border-foreground/50">
+            <div className="flex-1 min-w-0">
+              <div className="hud-label mb-1 text-[8px] md:text-[9px]">Acoustic Profile</div>
+              <select className="w-full bg-card/50 border border-border rounded-lg px-3 py-2 font-mono text-xs md:text-sm text-foreground focus:outline-none focus:border-foreground/50 appearance-none cursor-pointer">
                 <option value="silent">Silent Room</option>
                 <option value="cafe">Urban Cafe</option>
                 <option value="exam">Exam Hall</option>
               </select>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[9px] text-muted-foreground uppercase">
+          <div className="flex items-center justify-end md:justify-start">
+            <span className="font-mono text-[8px] md:text-[9px] text-muted-foreground uppercase">
               Config_Status: <span className="text-foreground">Ready</span>
             </span>
           </div>
