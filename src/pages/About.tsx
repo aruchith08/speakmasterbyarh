@@ -1,4 +1,4 @@
-import { ArrowLeft, Mic, Brain, Target, Trophy, BookOpen, BarChart3, Users, Zap, Shield, Globe, Clock } from "lucide-react";
+import { ArrowLeft, Mic, Brain, Target, Trophy, BookOpen, BarChart3, Users, Zap, Shield, Globe, Clock, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CosmicBackground } from "@/components/CosmicBackground";
@@ -248,8 +248,8 @@ const About = () => {
 
         {/* Credits */}
         <div className="backdrop-blur-xl bg-card/30 border border-border/50 rounded-2xl p-6 text-center">
-          <p className="text-muted-foreground font-mono text-sm mb-2">
-            Built with ❤️ for IELTS aspirants worldwide
+          <p className="text-muted-foreground font-mono text-sm mb-2 flex items-center justify-center gap-1">
+            Built with <Heart className="w-4 h-4 text-primary fill-primary/30" /> for IELTS aspirants worldwide
           </p>
           <p className="text-muted-foreground/60 font-mono text-xs">
             © 2025 SpeakMaster. All rights reserved.
