@@ -93,11 +93,11 @@ const About = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
         {/* Banner */}
-        <div className="mb-8 rounded-2xl overflow-hidden border border-border/50">
+        <div className="mb-8 rounded-2xl overflow-hidden border border-border/50 max-h-[40vh]">
           <img 
             src={speakmasterBanner} 
             alt="SpeakMaster by ARH" 
-            className="w-full h-auto object-cover"
+            className="w-full h-full object-cover"
           />
         </div>
 
