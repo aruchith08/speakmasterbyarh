@@ -1,4 +1,4 @@
-import { ArrowLeft, Mic, Brain, Target, Trophy, BookOpen, BarChart3, Users, Zap, Shield, Globe, Clock, Heart } from "lucide-react";
+import { ArrowLeft, Mic, Brain, Target, Trophy, BookOpen, BarChart3, Users, Zap, Shield, Globe, Clock, Heart, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CosmicBackground } from "@/components/CosmicBackground";
@@ -242,6 +242,30 @@ const About = () => {
                   {tech}
                 </span>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Creator */}
+        <div className="mb-8">
+          <h2 className="text-xl font-mono font-semibold mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-primary" />
+            Meet the Creator
+          </h2>
+          <div className="backdrop-blur-xl bg-card/30 border border-border/50 rounded-2xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
+                <User className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-mono font-semibold text-lg mb-1">Alokam Ruchith</h3>
+                <p className="text-primary/80 font-mono text-sm mb-3">AI/ML Engineer</p>
+                <p className="text-muted-foreground font-mono text-sm leading-relaxed">
+                  An aspiring engineer passionate about contributing to society through advancements in AI and ML. 
+                  Driven by a desire to help people, this application represents a thoughtful initiative to empower 
+                  individuals in improving their English communication skills using the power of AI technology.
+                </p>
+              </div>
             </div>
           </div>
         </div>
