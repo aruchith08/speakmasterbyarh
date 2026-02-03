@@ -1,0 +1,23 @@
+{
+  "name": "SpeakMaster | Stellar Mercury Edition",
+  "short_name": "SpeakMaster",
+  "description": "Advanced IELTS speaking practice platform with AI-powered feedback",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
