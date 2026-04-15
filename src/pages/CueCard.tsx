@@ -92,7 +92,7 @@ const CueCard = () => {
 
   // Timer logic
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     if (phase === "prep" && prepTime > 0) {
       interval = setInterval(() => {
