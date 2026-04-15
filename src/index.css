@@ -79,7 +79,7 @@
   body {
     @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    cursor: none;
+    cursor: default;
   }
 
   html {
