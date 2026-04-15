@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { CosmicBackground } from "./components/CosmicBackground";
-import { CustomCursor } from "./components/CustomCursor";
+
 import { Navigation } from "./components/Navigation";
 import { SplashScreen } from "./components/SplashScreen";
 import { PageTransition } from "./components/PageTransition";
@@ -81,7 +81,7 @@ const App = () => {
             <ApiKeyProvider>
               {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
               <CosmicBackground />
-              <CustomCursor />
+              
               <Navigation />
               <AnimatedRoutes />
             </ApiKeyProvider>

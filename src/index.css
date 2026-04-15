@@ -79,7 +79,7 @@
   body {
     @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    cursor: none;
+    cursor: default;
   }
 
   html {
@@ -254,19 +254,9 @@
     opacity: 0;
   }
 
-  /* Custom Cursor */
-  .cursor-ring {
-    @apply fixed pointer-events-none z-[9999];
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    transition: transform 0.1s ease-out, border-color 0.15s ease;
-  }
-
-  .cursor-ring.active {
-    transform: scale(0.8);
-    border-color: rgba(255, 255, 255, 1);
+  /* Interactive cursor styles */
+  a, button, [role="button"], input, textarea, select, .cursor-pointer {
+    cursor: pointer;
   }
 
   /* Navigation Link */
