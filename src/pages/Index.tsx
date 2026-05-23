@@ -1,14 +1,18 @@
 import Dashboard from "./Dashboard";
+import Landing from "./Landing";
 import { useAuth } from "@/hooks/useAuth";
 import { useApiKey } from "@/hooks/useApiKey";
 import { ApiKeySetup } from "@/components/ApiKeySetup";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { hasApiKey, isLoading } = useApiKey();
 
-  // Show API key setup modal for logged-in users without an API key
-  const showApiKeySetup = user && !isLoading && !hasApiKey;
+  if (loading) return null;
+
+  if (!user) return <Landing />;
+
+  const showApiKeySetup = !isLoading && !hasApiKey;
 
   return (
     <>
