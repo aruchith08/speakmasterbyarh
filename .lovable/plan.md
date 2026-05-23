@@ -1,85 +1,73 @@
-
-# Product-First Landing Page
-
-Build a public landing route that looks and feels like the real SpeakMaster Command Center — same Stellar Mercury aesthetic, same layout primitives, same components — but populated with demo/marketing content and routed to sign-up CTAs instead of live actions.
-
 ## Goal
 
-When a visitor lands on `/`, they should immediately *see the product*: the cosmic background, chrome glass cards, vocalizer card, practice module grid, HUD telemetry — not a generic marketing hero. The dashboard *is* the pitch.
+Rebuild `src/pages/Landing.tsx` in the spirit of NotebookLM's landing — a calm, centered, editorial product page anchored by ONE giant headline, a single primary CTA, and a hero product visual — but rendered in our Stellar Mercury dark/chrome aesthetic instead of NotebookLM's light look.
 
-## Routing changes
+The current `Landing.tsx` is a dashboard clone. We're replacing it with a true marketing landing that *features* the product, not mimics its workspace pixel-for-pixel.
 
-- `/` (Index) → new `Landing` page when user is **logged out**.
-- Logged-in users keep getting `Dashboard` at `/`.
-- Add `/app` as an explicit alias for the authenticated dashboard.
-- All CTAs ("Begin Training", "Start Free", module cards) on the landing page route to `/auth` for logged-out visitors.
+## Structure (top → bottom)
 
-## Page structure (`src/pages/Landing.tsx`)
-
-Mirrors `Dashboard.tsx` section-for-section, then adds light marketing scaffolding underneath. All sections use existing components (`StatusBadge`, `VocalizerCard`, `PracticeCard`, `MetricCard`, `CosmicBackground`) so the look is identical.
-
-```text
-┌─────────────────────────────────────────────────┐
-│ NAV (logo + Sign in / Get Started)              │
-├─────────────────────────────────────────────────┤
-│ HERO  (mirrors Dashboard hero)                  │
-│  ┌──────────────┐  ┌────────────────┐          │
-│  │ STATUS badge │  │                │          │
-│  │ COMMAND      │  │  VocalizerCard │          │
-│  │ CENTER.      │  │  (demo numbers)│          │
-│  │ subcopy      │  │                │          │
-│  │ [Start Free] │  └────────────────┘          │
-│  │ [Watch demo] │                               │
-│  │ MetricCards  │                               │
-│  └──────────────┘                               │
-├─────────────────────────────────────────────────┤
-│ TRAINING PROTOCOLS  (same 7-card grid, demo)    │
-├─────────────────────────────────────────────────┤
-│ HOW IT WORKS  (3 steps using practice-card look)│
-├─────────────────────────────────────────────────┤
-│ TELEMETRY PREVIEW  (analytics/HUD chrome strip) │
-├─────────────────────────────────────────────────┤
-│ FINAL CTA  (big chrome card → /auth)            │
-├─────────────────────────────────────────────────┤
-│ FOOTER  (same as Dashboard footer)              │
-└─────────────────────────────────────────────────┘
+```
+┌─────────────────────────────────────────────┐
+│ NAV  SpeakMaster · Overview · Plans · [App] │  slim top bar
+├─────────────────────────────────────────────┤
+│                                             │
+│            Master  Speaking                 │  giant centered H1
+│            (mercury gradient on word 2)     │  Syncopate, huge
+│                                             │
+│      Your AI IELTS coach, grounded in       │  muted subhead
+│      real-time speech analysis.             │
+│                                             │
+│              [ Try SpeakMaster ]            │  single chrome CTA
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│   ┌───────────────────────────────────┐     │
+│   │   HERO PRODUCT FRAME              │     │  dark chrome card,
+│   │   VocalizerCard + live waveform   │     │  glow, ambient blur
+│   │   + sample telemetry strip        │     │
+│   └───────────────────────────────────┘     │
+│                                             │
+├─────────────────────────────────────────────┤
+│           Speak. Analyze. Improve.          │  section heading
+│                                             │
+│   [icon]         [icon]         [icon]      │  3-col feature row
+│   Speak          Analyze        Improve     │  (mirrors NotebookLM
+│   copy…         copy…           copy…       │   "Upload your sources")
+│                                             │
+├─────────────────────────────────────────────┤
+│         How people are using SpeakMaster    │
+│   [Power study] [Mock exams] [Fluency]      │  3 use-case columns
+├─────────────────────────────────────────────┤
+│              Final CTA chrome card          │
+│              Footer                         │
+└─────────────────────────────────────────────┘
 ```
 
-### Hero
-- Reuse `StatusBadge`, headline typography, `VocalizerCard` populated with realistic demo telemetry (band 7.5, fluency 82, lexical 76, resonance 88).
-- `MetricCard` row shows aspirational sample stats labeled "Sample telemetry" via a small caption.
-- Primary CTA "Start Free" → `/auth`; secondary "Watch tutorial" → `/tutorial`.
+## Key design moves (Stellar Mercury reinterpretation)
 
-### Training protocols
-- Same 7 modules from `Dashboard.tsx`, same icons/copy, but rendered through a non-link wrapper so unauth clicks route to `/auth` (pass `path="/auth"` to `PracticeCard` for all modules).
+- **Hero**: one massive centered headline (`text-[clamp(3rem,10vw,8rem)]` Syncopate), `text-mercury` on the keyword. Below: one short subhead + ONE pill CTA (`btn-mercury`). No metric grid, no second CTA, no VocalizerCard up here — restraint is the point.
+- **Product visual sits BELOW the hero** in its own chrome-card frame, the way NotebookLM puts the dark app preview under "Try NotebookLM". This is where `VocalizerCard` + a sample telemetry strip lives. Heavy ambient blur glow behind it.
+- **Feature trio** ("Speak / Analyze / Improve"): clean 3-column with single Lucide icon at top, short title, short paragraph — matches NotebookLM's "Upload your sources" rhythm. Use existing `chrome-card` or a lighter borderless variant.
+- **Use cases** ("How people use SpeakMaster"): 3 columns — Power study (IELTS prep), Mock exams (live AI examiner), Fluency rebuild (Stammer Shield). Italic tagline at bottom of each, NotebookLM-style.
+- **Final CTA + footer** stay (already strong).
 
-### How it works
-- Three steps in chrome cards: 1) Speak into a live protocol, 2) AI scores fluency, lexical, pronunciation, coherence, 3) Track XP and band progression.
+## What's removed vs current Landing.tsx
 
-### Telemetry preview
-- Static HUD-style strip echoing Analytics page styling (no real data fetch) to hint at the analytics depth.
+- The 7-card "Training Protocols" grid (too dashboard-y for this direction; protocols live inside the app)
+- The "Operating Sequence" 3-card section (folded into the 3-feature trio)
+- The standalone "Live Telemetry" section (folded into hero product frame)
+- The dual-CTA + metric row in hero (collapsed to one CTA)
 
-### Final CTA
-- Large chrome glass card: "Initiate your IELTS protocol." + `[Begin Training]` → `/auth`.
+## Files
 
-### Footer
-- Reuses the Dashboard footer block verbatim.
+- **Rewrite** `src/pages/Landing.tsx` — single file, all sections above.
+- No new components, no new deps, no routing changes, no backend changes.
+- Reuses: `StatusBadge`, `VocalizerCard`, `MetricCard`, existing `chrome-card` / `btn-mercury` / `text-mercury` tokens, Lucide icons.
 
 ## SEO
-- `<title>` ~ "SpeakMaster — AI IELTS Speaking Coach"
-- meta description ~155 chars
-- single H1: "COMMAND CENTER."
-- canonical + viewport already present in `index.html`.
 
-## Technical notes
-
-- New file: `src/pages/Landing.tsx`. No backend changes, no new dependencies.
-- `src/pages/Index.tsx`: branch on `useAuth().user` — render `Landing` when no user, `Dashboard` when authenticated. Keep `ApiKeySetup` only for authed users.
-- `src/App.tsx`: add `/app` route → `Dashboard` (wrapped in existing auth guard pattern).
-- Reuses semantic tokens; no raw colors. No business logic touched (auth, edge functions, hooks untouched).
-- `useRealtimeStats` is NOT called on the landing page — demo numbers are hardcoded to avoid Supabase calls for anonymous visitors.
+Keep single H1 ("Master Speaking." or similar), update `<title>` in `index.html` only if user asks — current title already fits.
 
 ## Out of scope
-- No pricing, testimonials, or blog sections (product-first, not marketing-heavy).
-- No changes to edge functions, RLS, or schema.
-- No new images generated; relies on existing CosmicBackground + chrome card styling.
+
+Pricing, testimonials, blog, new images, auth changes, edge functions, schema changes.
