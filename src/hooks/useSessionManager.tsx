@@ -101,7 +101,10 @@ export const useSessionManager = () => {
 
   const saveSession = useCallback(async (sessionData: SessionData): Promise<boolean> => {
     if (!user) {
-      toast.error("Please sign in to save your progress");
+      toast.error("Login required to save progress", {
+        description: "Sign in to save sessions, track XP, streaks, and history. Guest mode doesn't persist data.",
+        duration: 6000,
+      });
       return false;
     }
 
