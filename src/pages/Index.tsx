@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import Landing from "./Landing";
 import { useAuth } from "@/hooks/useAuth";
