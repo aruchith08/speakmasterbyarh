@@ -32,6 +32,7 @@ import SessionHistory from "./pages/SessionHistory";
 import Vocabulary from "./pages/Vocabulary";
 import Achievements from "./pages/Achievements";
 import About from "./pages/About";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
