@@ -34,9 +34,7 @@ const Index = () => {
 
   if (loading) return null;
 
-  if (!user) return <Navigate to="/auth" replace />;
-
-  const showApiKeySetup = !isLoading && !hasApiKey;
+  const showApiKeySetup = !!user && !isLoading && !hasApiKey;
 
   return (
     <>
