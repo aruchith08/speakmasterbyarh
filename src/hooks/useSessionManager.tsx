@@ -56,12 +56,18 @@ export const useSessionManager = () => {
     }
 
     if (!user) {
-      toast.error("Please sign in to use AI features");
+      toast.error("Login required", {
+        description: "Sign in and add your Groq API key in Settings to run AI protocols. New here? Create a free account to unlock analysis.",
+        duration: 6000,
+      });
       return null;
     }
 
     if (!hasApiKey) {
-      toast.error("Please add your Groq API key in settings");
+      toast.error("Groq API key required", {
+        description: "Add your free Groq API key in Settings → API Key to enable AI-powered analysis.",
+        duration: 6000,
+      });
       return null;
     }
 
