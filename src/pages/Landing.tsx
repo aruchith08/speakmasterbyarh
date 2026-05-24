@@ -6,7 +6,7 @@ import { MetricCard } from "@/components/MetricCard";
 
 const Landing = () => {
   const navigate = useNavigate();
-  const goAuth = () => navigate("/auth");
+  const goAuth = () => navigate("/app");
 
   const features = [
     {

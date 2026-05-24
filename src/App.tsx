@@ -32,6 +32,7 @@ import SessionHistory from "./pages/SessionHistory";
 import Vocabulary from "./pages/Vocabulary";
 import Achievements from "./pages/Achievements";
 import About from "./pages/About";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><Index /></PageTransition>} />
         <Route path="/app" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/landing" element={<PageTransition><Landing /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/practice" element={<PageTransition><Practice /></PageTransition>} />
         <Route path="/practice/mock-exam" element={<PageTransition><MockExam /></PageTransition>} />
