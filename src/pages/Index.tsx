@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import Landing from "./Landing";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,9 +34,7 @@ const Index = () => {
 
   if (loading) return null;
 
-  if (!user) return <Navigate to="/auth" replace />;
-
-  const showApiKeySetup = !isLoading && !hasApiKey;
+  const showApiKeySetup = !!user && !isLoading && !hasApiKey;
 
   return (
     <>
