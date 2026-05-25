@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { StreamBar } from '@/components/StreamBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { getSessionTypeLabel } from '@/lib/sessionTypes';
 
 interface Session {
   id: string;
@@ -72,17 +73,6 @@ const SessionHistory = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getSessionTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      'mock-exam': 'Mock Exam',
-      'cue-card': 'Cue Card',
-      'read-aloud': 'Read Aloud',
-      'discussion': 'Discussion',
-      'intonation': 'Intonation',
-      'stammer': 'Stammer Neutralizer',
-    };
-    return labels[type] || type;
-  };
 
   const filteredSessions = filterType === 'all' 
     ? sessions 

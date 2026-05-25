@@ -9,8 +9,18 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    // Skip splash on repeat visits within the same browser session
+    if (typeof window !== "undefined" && sessionStorage.getItem("splash_shown") === "1") {
+      setIsVisible(false);
+      onComplete();
+      return;
+    }
+
     const timer = setTimeout(() => {
       setIsVisible(false);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("splash_shown", "1");
+      }
       setTimeout(onComplete, 800); // Wait for exit animation
     }, 2500);
 

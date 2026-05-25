@@ -379,14 +379,8 @@ const Phonetics = () => {
         <div className="text-center py-20">
           <h2 className="text-2xl font-heading font-bold mb-4">API Key Required</h2>
           <p className="text-muted-foreground mb-6">
-            Please add your Groq API key in settings to use phonetics practice.
+            Please add your Groq API key to use phonetics practice. Open settings using the gear icon in the top navigation.
           </p>
-          <Link
-            to="/settings"
-            className="btn-mercury h-12 px-8 rounded-xl inline-flex items-center justify-center"
-          >
-            Go to Settings
-          </Link>
         </div>
       </main>
     );

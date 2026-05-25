@@ -12,6 +12,7 @@ import { SplashScreen } from "./components/SplashScreen";
 import { PageTransition } from "./components/PageTransition";
 import { AuthProvider } from "./hooks/useAuth";
 import { ApiKeyProvider } from "./hooks/useApiKey";
+import { useAchievementWatcher } from "./hooks/useAchievementWatcher";
 import Index from "./pages/Index";
 import Practice from "./pages/Practice";
 import Roadmap from "./pages/Roadmap";
@@ -39,6 +40,8 @@ const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  // Auto-unlock achievements when stats/vocabulary change (no-op when signed out).
+  useAchievementWatcher();
 
   return (
     <AnimatePresence mode="wait">
