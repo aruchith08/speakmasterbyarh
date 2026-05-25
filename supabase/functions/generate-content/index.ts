@@ -217,9 +217,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    // Log full details server-side; return a generic message to the client.
     console.error("Error in generate-content function:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: "Content generation failed. Please try again." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
