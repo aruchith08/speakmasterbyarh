@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { StreamBar } from '@/components/StreamBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { getSessionTypeLabel } from '@/lib/sessionTypes';
 
 interface Session {
   id: string;
@@ -72,8 +73,6 @@ const SessionHistory = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getSessionTypeLabel } = require('@/lib/sessionTypes');
 
   const filteredSessions = filterType === 'all' 
     ? sessions 
