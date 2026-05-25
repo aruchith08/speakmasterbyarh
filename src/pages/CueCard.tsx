@@ -144,7 +144,7 @@ const CueCard = () => {
     }
 
     try {
-      const result = await analyzeTranscript(transcript, "cue-card", currentCueCard.topic);
+      const result = await analyzeTranscript(transcript, "cue_card", currentCueCard.topic);
       
       if (result) {
         setAnalysisResult({
@@ -161,7 +161,7 @@ const CueCard = () => {
 
         // Save session
         await saveSession({
-          session_type: "cue-card",
+          session_type: "cue_card",
           topic: currentCueCard.topic,
           transcript,
           duration_seconds: 120 - deliveryTime,

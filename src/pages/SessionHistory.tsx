@@ -72,17 +72,8 @@ const SessionHistory = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getSessionTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      'mock-exam': 'Mock Exam',
-      'cue-card': 'Cue Card',
-      'read-aloud': 'Read Aloud',
-      'discussion': 'Discussion',
-      'intonation': 'Intonation',
-      'stammer': 'Stammer Neutralizer',
-    };
-    return labels[type] || type;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getSessionTypeLabel } = require('@/lib/sessionTypes');
 
   const filteredSessions = filterType === 'all' 
     ? sessions 
